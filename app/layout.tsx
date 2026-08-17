@@ -1,12 +1,19 @@
 import { Source_Serif_4, Inter, Noto_Sans_Ethiopic } from "next/font/google";
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SITE_URL } from "@/lib/seo";
 import { FloatingContact } from "@/components/layout/FloatingContact";
+import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  manifest: "/manifest.webmanifest",
 };
+
+export const viewport: Viewport = {
+  themeColor: "#12100D",
+};
+
 const bodyEn = Source_Serif_4({
   subsets: ["latin"],
   variable: "--font-body-en",
@@ -44,6 +51,7 @@ export default function RootLayout({
       >
         {children}
         <FloatingContact />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

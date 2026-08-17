@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import type { Role } from "@prisma/client";
 import { Video as VideoIcon, Mic, Newspaper } from "lucide-react";
-
+import { Key } from "lucide-react";
 interface NavItem {
   label: string;
   href: string;
@@ -60,6 +60,7 @@ const navItems: NavItem[] = [
     icon: Camera,
     roles: ["ADMIN", "EDITOR", "AUTHOR"],
   },
+  { label: "API Keys", href: "/admin/api-keys", icon: Key, roles: ["ADMIN"] },
   {
     label: "Events",
     href: "/admin/events",

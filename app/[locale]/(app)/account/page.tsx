@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
 import { ManageBillingButton } from "@/components/account/ManageBillingButton";
-
+import { DataExportButton } from "@/components/account/DataExportButton";
 export default async function AccountPage() {
   const session = await auth();
   const user = await prisma.user.findUnique({
@@ -23,6 +23,9 @@ export default async function AccountPage() {
           <ManageBillingButton />
         </div>
       )}
+      <div className="mt-6">
+        <DataExportButton />
+      </div>
       <DeleteAccountButton />
     </div>
   );

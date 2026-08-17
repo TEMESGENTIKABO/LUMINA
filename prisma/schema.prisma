@@ -46,6 +46,7 @@ model User {
   revisions            ArticleRevision[]
   photoStories         PhotoStory[]
   auditLogs            AdminAuditLog[]
+  apiKeys              ApiKey[]
   videos               Video[]
   membershipTier       String            @default("reader")
   stripeCustomerId     String?           @unique
@@ -429,4 +430,15 @@ model AdminAuditLog {
 
   @@index([contentType, contentId])
   @@index([createdAt])
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique
+  keyPreview String
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
 }

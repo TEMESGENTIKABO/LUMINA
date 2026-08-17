@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { mapDbArticleToArticle, articleIncludeShape } from "@/content/cms/db/mapArticle";
 import type { Article } from "@/content/types/Article";
-
+import { cached } from "@/lib/dataCache";
 export interface TrendingItem {
   article: Article;
   direction: "up" | "down" | "flat";
@@ -10,9 +10,10 @@ export interface TrendingItem {
 // Real velocity-based trending: reads in the last 6 hours vs. the 6 hours
 // before that, replacing the earlier recency-only approximation.
 export async function getTrendingArticles(): Promise<TrendingItem[]> {
-  const now = new Date();
-  const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+  return cached("homepage:trending", 120, async () => {
+    const now = new Date();
+    const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
 
   const recentViews = await prisma.pageView.groupBy({
     by: ["articleSlug"],
@@ -58,4 +59,5 @@ export async function getTrendingArticles(): Promise<TrendingItem[]> {
     results.push({ article: mapDbArticleToArticle(article), direction });
   }
   return results;
+  });
 }

@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
   });
 
   if (recentArticles.length === 0) {
-    return NextResponse.json({ sent: 0, reason: "No new articles in the last 24 hours" });
+    return NextResponse.json({
+      sent: 0,
+      reason: "No new articles in the last 24 hours",
+    });
   }
 
   const subscribers = await prisma.newsletterSubscriber.findMany({
@@ -29,7 +32,10 @@ export async function GET(request: NextRequest) {
   });
 
   if (subscribers.length === 0) {
-    return NextResponse.json({ sent: 0, reason: "No subscribers to morning-brief" });
+    return NextResponse.json({
+      sent: 0,
+      reason: "No subscribers to morning-brief",
+    });
   }
 
   const articlesHtml = recentArticles
@@ -41,7 +47,7 @@ export async function GET(request: NextRequest) {
         <a href="${SITE_URL}/en/article/${a.slug}" style="font-family: Georgia, serif; font-size: 18px; color: #12100D; text-decoration: none;">${a.title_en}</a>
         <p style="font-size: 14px; color: #666; margin: 4px 0 0;">${a.dek_en}</p>
       </td>
-    </tr>`
+    </tr>`,
     )
     .join("");
 
@@ -55,12 +61,16 @@ export async function GET(request: NextRequest) {
 
   let sentCount = 0;
   for (const sub of subscribers) {
+    const personalizedHtml = html.replace(
+      "</div>",
+      `<p style="font-size: 11px; color: #aaa;"><a href="${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color: #aaa;">Unsubscribe</a></p></div>`,
+    );
     try {
       await resend.emails.send({
         from: "AKSUM <onboarding@resend.dev>",
         to: sub.email,
         subject: `AKSUM Morning Brief - ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
-        html,
+        html: personalizedHtml,
       });
       sentCount++;
     } catch (error) {
@@ -68,5 +78,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent: sentCount, total: subscribers.length, articleCount: recentArticles.length });
+  return NextResponse.json({
+    sent: sentCount,
+    total: subscribers.length,
+    articleCount: recentArticles.length,
+  });
 }
