@@ -1,0 +1,35 @@
+@media print {
+  header, footer, .video-embed-wrapper, .no-print,
+  nav, [aria-label="Share on WhatsApp"], [aria-label="Share on X"],
+  [aria-label="Share on Facebook"], [aria-label="Copy link"],
+  [aria-label="Save article"], [aria-label="Remove from saved"] {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .article-body-rich {
+    max-width: 100%;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  .article-body-rich img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: black;
+    text-decoration: none;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555;
+  }
+}

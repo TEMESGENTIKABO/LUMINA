@@ -1,0 +1,16 @@
+{
+  "nav": {
+    "news": "News",
+    "culture": "Culture",
+    "businessTech": "Business & Tech",
+    "magazine": "Magazine",
+    "videoPodcast": "Video & Podcast",
+    "search": "Search",
+    "membership": "Become a Member",
+    "signIn": "Sign In"
+  },
+  "footer": {
+    "tagline": "Ancient roots. Modern voice.",
+    "rights": "All rights reserved."
+  }
+}

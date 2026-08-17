@@ -1,0 +1,60 @@
+:root {
+  --token-aksum-black: #12100d;
+  --token-parchment-white: #f8f5ef;
+  --token-obsidian-grey: #2b2926;
+  --token-aksum-gold: #c79a45;
+  --token-manuscript-red: #8c2f2f;
+  --token-lalibela-blue: #1e3a45;
+  --token-terracotta: #b5623a;
+
+  --hairline: rgba(43, 41, 38, 0.12);
+  --hairline-strong: rgba(43, 41, 38, 0.28);
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+
+  --text-headline-xl: 2.75rem;
+  --text-headline-lg: 2rem;
+  --text-headline-md: 1.375rem;
+  --text-headline-sm: 1.125rem;
+  --text-body: 1.0625rem;
+  --text-meta: 0.8125rem;
+  --text-label: 0.6875rem;
+
+  --leading-am-body: 1.9;
+  --leading-en-body: 1.55;
+  --leading-headline: 1.08;
+    /* RGB channels for opacity-based utilities */
+  --token-aksum-black-rgb: 14, 13, 12;
+  --token-aksum-gold-rgb: 184, 145, 47;
+  --token-obsidian-grey-rgb: 91, 89, 85;
+  --token-manuscript-red-rgb: 163, 43, 43;
+
+  /* Typography */
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-en: "Source Serif 4", Georgia, serif;
+  --font-body-am: "Noto Serif Ethiopic", serif;
+  --font-headline-en-family: "Fraunces", Georgia, serif;
+
+  --text-label: 0.6875rem; /* 11px, uppercase labels */
+
+  /* Elevation */
+  --shadow-elevation-1: 0 1px 2px rgba(var(--token-aksum-black-rgb), 0.06);
+  --shadow-elevation-2:
+    0 8px 24px rgba(var(--token-aksum-black-rgb), 0.1),
+    0 2px 6px rgba(var(--token-aksum-black-rgb), 0.06);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+}
+
+.dark {
+  --token-aksum-black: #f8f5ef;
+  --token-parchment-white: #12100d;
+}

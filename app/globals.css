@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/typography.css";
+@import "../styles/print.css";
+
+@theme {
+  --color-aksum-black: var(--token-aksum-black);
+  --color-parchment-white: var(--token-parchment-white);
+  --color-obsidian-grey: var(--token-obsidian-grey);
+  --color-aksum-gold: var(--token-aksum-gold);
+  --color-manuscript-red: var(--token-manuscript-red);
+  --color-lalibela-blue: var(--token-lalibela-blue);
+  --color-terracotta: var(--token-terracotta);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --font-ui: var(--font-ui);
+  --font-body-en: var(--font-body-en);
+  --font-body-am: var(--font-body-am);
+  --font-headline-en: Georgia, serif;
+  --font-headline-am: serif;
+
+  --max-width-content: 680px;
+  --max-width-page: 1280px;
+}
+
+.section-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-obsidian-grey);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.hairline-t {
+  border-top: 1px solid var(--color-hairline);
+}
+.hairline-b {
+  border-bottom: 1px solid var(--color-hairline);
+}
+.hairline-y {
+  border-top: 1px solid var(--color-hairline);
+  border-bottom: 1px solid var(--color-hairline);
+}
+/* globals.css or tailwind.config.ts extensions */
+:root {
+  --aksum-black: #0a0a0a;
+  --aksum-navy: #0f1b2e;      /* Bloomberg-inspired deep blue */
+  --aksum-crimson: #8b1538;   /* FT salmon + i Paper red synthesis */
+  --aksum-gold: #c9a227;
+  --parchment-white: #faf9f6;
+  --obsidian-grey: #5c5c5c;
+  --hairline: rgba(0, 0, 0, 0.08);
+}
+
+/* Shadow elevation for dropdowns */
+.shadow-elevation {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+/* globals.css or similar */
+:root {
+  --color-aksum-black-rgb: 26, 26, 26;
+  --color-aksum-gold-rgb: 201, 168, 76;
+  --color-obsidian-grey-rgb: 107, 107, 107;
+  
+  /* Existing variables */
+  --color-aksum-black: #1a1a1a;
+  --color-aksum-gold: #c9a84c;
+  --color-obsidian-grey: #6b6b6b;
+  --color-lalibela-blue: #2980b9;
+  --color-manuscript-red: #c0392b;
+  --color-parchment-white: #f5f0e8;
+  --font-headline-en: 'YourHeadlineFont', serif;
+  --font-ui: 'YourUiFont', sans-serif;
+}

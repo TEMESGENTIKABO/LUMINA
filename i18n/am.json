@@ -1,0 +1,16 @@
+{
+  "nav": {
+    "news": "ዜና",
+    "culture": "ባህል",
+    "businessTech": "ንግድና ቴክኖሎጂ",
+    "magazine": "መጽሔት",
+    "videoPodcast": "ቪዲዮና ፖድካስት",
+    "search": "ፈልግ",
+    "membership": "አባል ይሁኑ",
+    "signIn": "ግባ"
+  },
+  "footer": {
+    "tagline": "ጥንታዊ ስረ መሰረት። ዘመናዊ ድምጽ።",
+    "rights": "መብቱ በህግ የተጠበቀ ነው።"
+  }
+}

@@ -1,0 +1,432 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUBSCRIBER
+  AUTHOR
+  EDITOR
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  IN_REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+
+  slug String? @unique
+  bio  String?
+  beat String?
+
+  role Role @default(SUBSCRIBER)
+
+  accounts             Account[]
+  sessions             Session[]
+  savedArticles        SavedArticle[]
+  followedTopics       FollowedTopic[]
+  articles             Article[]         @relation("ArticleAuthor")
+  media                Media[]
+  comments             Comment[]
+  revisions            ArticleRevision[]
+  photoStories         PhotoStory[]
+  auditLogs            AdminAuditLog[]
+  videos               Video[]
+  membershipTier       String            @default("reader")
+  stripeCustomerId     String?           @unique
+  stripeSubscriptionId String?
+  createdAt            DateTime          @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model SavedArticle {
+  id          String   @id @default(cuid())
+  userId      String
+  articleSlug String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleSlug])
+}
+
+model FollowedTopic {
+  id        String   @id @default(cuid())
+  userId    String
+  topicSlug String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicSlug])
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name_en     String
+  name_am     String?
+  accentColor String  @default("obsidian-grey")
+
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  articles Article[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  articles ArticleTag[]
+
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id       String  @id @default(cuid())
+  url      String
+  filename String
+  mimeType String
+  size     Int
+  altText  String?
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Article {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  title_en String
+  title_am String?
+  dek_en   String
+  dek_am   String?
+
+  body_en Json
+  body_am Json?
+
+  heroImageUrl     String?
+  heroImageCaption String?
+
+  status      ArticleStatus @default(DRAFT)
+  isBreaking  Boolean       @default(false)
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+
+  authorId String
+  author   User   @relation("ArticleAuthor", fields: [authorId], references: [id])
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  tags            ArticleTag[]
+  revisions       ArticleRevision[]
+  topics          ArticleTopic[]
+  editions        EditionArticle[]
+  readTimeMinutes Int               @default(5)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+model SiteSettings {
+  id String @id @default("singleton")
+
+  siteName              String  @default("AKSUM")
+  tagline_en            String  @default("Ancient roots. Modern voice.")
+  tagline_am            String?
+  defaultSeoDescription String?
+  contactEmail          String?
+
+  twitterUrl   String?
+  facebookUrl  String?
+  instagramUrl String?
+  whatsappUrl  String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id          String @id @default(cuid())
+  articleSlug String
+  content     String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  topics    String[] @default([])
+  confirmed Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ArticleRevision {
+  id        String  @id @default(cuid())
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  title_en String
+  dek_en   String
+  body_en  Json
+  status   ArticleStatus
+
+  editedById String
+  editedBy   User   @relation(fields: [editedById], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  location    String
+  imageUrl    String?
+  startsAt    DateTime
+  published   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Topic {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  title       String
+  description String
+  published   Boolean @default(false)
+
+  articles ArticleTopic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ArticleTopic {
+  articleId String
+  topicId   String
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  topic   Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, topicId])
+}
+
+model PhotoStory {
+  id     String @id @default(cuid())
+  slug   String @unique
+  title  String
+  intro  String
+  images Json
+
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id              String @id @default(cuid())
+  slug            String @unique
+  title_en        String
+  description_en  String
+  thumbnailUrl    String
+  videoUrl        String
+  durationSeconds Int
+  category        String
+  accentColor     String @default("obsidian-grey")
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PodcastShow {
+  id            String @id @default(cuid())
+  slug          String @unique
+  title         String
+  description   String
+  coverImageUrl String
+
+  episodes PodcastEpisode[]
+
+  createdAt DateTime @default(now())
+}
+
+model PodcastEpisode {
+  id              String      @id @default(cuid())
+  slug            String
+  showId          String
+  show            PodcastShow @relation(fields: [showId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  audioUrl        String
+  durationSeconds Int
+  episodeNumber   Int
+
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([showId, slug])
+}
+
+model DigitalEdition {
+  id            String @id @default(cuid())
+  slug          String @unique
+  issueLabel    String
+  coverImageUrl String
+  headline      String
+
+  articles EditionArticle[]
+
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model EditionArticle {
+  editionId String
+  articleId String
+  position  Int    @default(0)
+
+  edition DigitalEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  article Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([editionId, articleId])
+}
+
+// Stripe fields added to User below via separate edit
+
+model PageView {
+  id          String   @id @default(cuid())
+  articleSlug String
+  createdAt   DateTime @default(now())
+
+  @@index([articleSlug, createdAt])
+}
+
+model PushSubscription {
+  id       String @id @default(cuid())
+  userId   String
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  createdAt DateTime @default(now())
+}
+
+enum AuditActionType {
+  CREATED
+  UPDATED
+  DELETED
+  PUBLISHED
+  ROLE_CHANGED
+}
+
+model AdminAuditLog {
+  id           String          @id @default(cuid())
+  actionType   AuditActionType
+  contentType  String
+  contentId    String
+  contentLabel String
+  snapshot     Json?
+
+  actorId String
+  actor   User   @relation(fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([contentType, contentId])
+  @@index([createdAt])
+}

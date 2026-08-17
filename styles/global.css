@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/typography.css";
+
+@theme {
+  --color-aksum-black: var(--token-aksum-black);
+  --color-parchment-white: var(--token-parchment-white);
+  --color-obsidian-grey: var(--token-obsidian-grey);
+  --color-aksum-gold: var(--token-aksum-gold);
+  --color-manuscript-red: var(--token-manuscript-red);
+  --color-lalibela-blue: var(--token-lalibela-blue);
+  --color-terracotta: var(--token-terracotta);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --font-ui: var(--font-ui);
+  --font-body-en: var(--font-body-en);
+  --font-body-am: var(--font-body-am);
+  --font-headline-en: var(--font-headline-en-family);
+  --font-headline-am: "Noto Serif Ethiopic", serif;
+
+  --max-width-content: 680px;
+  --max-width-page: 1280px;
+}
+
+.section-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-obsidian-grey);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.hairline-t { border-top: 1px solid var(--color-hairline); }
+.hairline-b { border-bottom: 1px solid var(--color-hairline); }
+.hairline-y {
+  border-top: 1px solid var(--color-hairline);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.shadow-elevation { box-shadow: var(--shadow-elevation-2); }
+
+/* Signature motif: the manuscript rubrication rule.
+   Used for active nav state, header hover, and footer top border —
+   nowhere else, so it stays meaningful rather than decorative. */
+.rubrication-rule {
+  background: var(--color-manuscript-red);
+}
+
+/* Visible keyboard focus, enterprise a11y floor */
+:focus-visible {
+  outline: 2px solid var(--color-manuscript-red);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
