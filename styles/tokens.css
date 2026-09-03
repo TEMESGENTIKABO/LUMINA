@@ -24,11 +24,12 @@
   --text-body: 1.0625rem;
   --text-meta: 0.8125rem;
   --text-label: 0.6875rem;
-
+  --article-font-scale: 1;
   --leading-am-body: 1.9;
   --leading-en-body: 1.55;
   --leading-headline: 1.08;
-    /* RGB channels for opacity-based utilities */
+  --article-font-scale: 1;
+  /* RGB channels for opacity-based utilities */
   --token-aksum-black-rgb: 14, 13, 12;
   --token-aksum-gold-rgb: 184, 145, 47;
   --token-obsidian-grey-rgb: 91, 89, 85;
@@ -58,3 +59,4 @@
   --token-aksum-black: #f8f5ef;
   --token-parchment-white: #12100d;
 }
+

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { UtilityBar } from "./UtilityBar";
-import { PrimaryNav } from "./PrimaryNav";
+import { ActivePrimaryNav } from "./ActivePrimaryNav";
+import { ActiveSubcategoryBar } from "./ActiveSubcategoryBar";
 import { HeaderSearchTrigger } from "./HeaderSearchTrigger";
 import { MobileNav } from "./MobileNav";
-import { SubcategoryBar } from "./SubcategoryBar";
 import { getTranslations } from "next-intl/server";
 import { primaryNav } from "@/config/navigation";
 
@@ -58,67 +58,47 @@ function BreakingTicker({ items }: { items: BreakingItem[] }) {
 
 interface HeaderProps {
   locale: string;
-  activeSlug?: string;
-  subcategories?: Array<{ label: string; href: string; isActive?: boolean }>;
   breakingItems?: BreakingItem[];
 }
 
-export async function Header({
-  locale,
-  activeSlug,
-  subcategories,
-  breakingItems,
-}: HeaderProps) {
+export async function Header({ locale, breakingItems }: HeaderProps) {
   const t = await getTranslations();
 
   return (
     <header className="sticky top-0 z-50 bg-parchment-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
-      <a
+      
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-1 focus:left-2 focus:z-[60] focus:bg-aksum-black focus:text-parchment-white focus:px-3 focus:py-1.5 focus:text-xs focus:font-ui focus:rounded-sm focus:ring-2 focus:ring-manuscript-red/50"
       >
         Skip to content
       </a>
 
-      {/* Compact utility strip */}
       <UtilityBar locale={locale} />
 
-      {/* Single-row command bar: Logo + Nav + Actions */}
       <div className="border-b border-hairline bg-parchment-white">
         <div className="max-w-page mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-          {/* Mobile menu */}
           <div className="lg:hidden flex items-center shrink-0">
-            <MobileNav
-              locale={locale}
-              items={primaryNav}
-              searchLabel={t("nav.search")}
-            />
+            <MobileNav locale={locale} items={primaryNav} searchLabel={t("nav.search")} />
           </div>
 
-          {/* Logo — compact, left-aligned */}
           <div className="flex items-center shrink-0">
             <Link
               href={`/${locale}`}
               className="group flex items-baseline font-headline-en text-xl sm:text-2xl font-bold tracking-[-0.02em] text-aksum-black select-none"
             >
-              <span className="text-manuscript-red transition-transform duration-200 group-hover:-translate-y-0.5 inline-block">
-                A
-              </span>
+              <span className="text-manuscript-red transition-transform duration-200 group-hover:-translate-y-0.5 inline-block">A</span>
               <span>KSUM</span>
             </Link>
           </div>
 
-          {/* Desktop Nav — integrated inline, centered */}
           <div className="hidden lg:flex flex-1 justify-center min-w-0">
-            <PrimaryNav locale={locale} activeSlug={activeSlug} />
+            <ActivePrimaryNav locale={locale} />
           </div>
 
-          {/* Actions — right cluster */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <div className="hover:bg-aksum-black/[0.03] active:bg-aksum-black/[0.06] transition-colors duration-150 rounded-full p-2">
               <HeaderSearchTrigger locale={locale} label={t("nav.search")} />
             </div>
-            {/* Mobile-only search icon when menu is closed */}
             <div className="lg:hidden">
               <HeaderSearchTrigger locale={locale} label={t("nav.search")} />
             </div>
@@ -126,17 +106,9 @@ export async function Header({
         </div>
       </div>
 
-      {breakingItems && breakingItems.length > 0 && (
-        <BreakingTicker items={breakingItems} />
-      )}
+      {breakingItems && breakingItems.length > 0 && <BreakingTicker items={breakingItems} />}
 
-      {subcategories && subcategories.length > 0 && (
-        <div className="border-b border-hairline bg-parchment-white/80 backdrop-blur-sm">
-          <div className="max-w-page mx-auto px-4 sm:px-6 lg:px-8">
-            <SubcategoryBar items={subcategories} />
-          </div>
-        </div>
-      )}
+      <ActiveSubcategoryBar locale={locale} />
     </header>
   );
 }
