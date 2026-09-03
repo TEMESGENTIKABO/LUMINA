@@ -11,6 +11,11 @@ const protectedPathPattern = /^\/(en|am)\/(account|onboarding)/;
 const articlePathPattern = /^\/(en|am)\/article\/[a-z0-9-]+/;
 const FREE_ARTICLE_LIMIT = 5;
 
+function withPathname(response: NextResponse, pathname: string) {
+  response.headers.set("x-pathname", pathname);
+  return response;
+}
+
 export default auth((request: NextRequest) => {
   const { pathname } = request.nextUrl;
   const session = (request as any).auth;
@@ -25,7 +30,7 @@ export default auth((request: NextRequest) => {
     if (!["ADMIN", "EDITOR", "AUTHOR"].includes(role)) {
       return NextResponse.redirect(new URL("/en", request.url));
     }
-    return NextResponse.next();
+    return withPathname(NextResponse.next(), pathname);
   }
 
   const isProtected = protectedPathPattern.test(pathname);
@@ -41,14 +46,14 @@ export default auth((request: NextRequest) => {
     const tier = session?.user?.membershipTier;
     const isStaffOrMember = ["ADMIN", "EDITOR", "AUTHOR"].includes(role) || ["supporter", "patron"].includes(tier);
 
-    const response = intlMiddleware(request) ?? NextResponse.next();
+    const response = withPathname(intlMiddleware(request) ?? NextResponse.next(), pathname);
 
     if (isStaffOrMember) {
       response.headers.set("x-paywall-blocked", "false");
       return response;
     }
 
-    const monthKey = new Date().toISOString().slice(0, 7); // "2026-08"
+    const monthKey = new Date().toISOString().slice(0, 7);
     const cookieName = `aksum_reads_${monthKey}`;
     const currentCount = Number(request.cookies.get(cookieName)?.value ?? "0");
 
@@ -57,7 +62,7 @@ export default auth((request: NextRequest) => {
     } else {
       response.headers.set("x-paywall-blocked", "false");
       response.cookies.set(cookieName, String(currentCount + 1), {
-        maxAge: 60 * 60 * 24 * 40, // ~40 days, comfortably covers a full calendar month
+        maxAge: 60 * 60 * 24 * 40,
         httpOnly: false,
       });
     }
@@ -65,7 +70,7 @@ export default auth((request: NextRequest) => {
     return response;
   }
 
-  return intlMiddleware(request);
+  return withPathname(intlMiddleware(request) ?? NextResponse.next(), pathname);
 });
 
 export const config = {
