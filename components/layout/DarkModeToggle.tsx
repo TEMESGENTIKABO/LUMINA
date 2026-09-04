@@ -1,25 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export function DarkModeToggle() {
-  const [dark, setDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const dark = useSyncExternalStore(
+    (onChange) => {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => onChange();
+      window.addEventListener("storage", handleChange);
+      window.addEventListener("aksum-theme-change", handleChange);
+      media.addEventListener("change", handleChange);
+      return () => {
+        window.removeEventListener("storage", handleChange);
+        window.removeEventListener("aksum-theme-change", handleChange);
+        media.removeEventListener("change", handleChange);
+      };
+    },
+    () => {
+      const stored = localStorage.getItem("aksum-theme");
+      return stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    },
+    () => false,
+  );
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("aksum-theme");
-    const prefersDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(prefersDark);
-    document.documentElement.classList.toggle("dark", prefersDark);
-  }, []);
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   function toggle() {
     const next = !dark;
-    setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("aksum-theme", next ? "dark" : "light");
+    window.dispatchEvent(new Event("aksum-theme-change"));
   }
 
   if (!mounted) return <span className="w-4 h-4 inline-block" aria-hidden="true" />;
