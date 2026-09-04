@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SaveButton } from "./SaveButton";
 import { FontSizeControl } from "./FontSizeControl";
+import { ReadAloudButton } from "./ReadAloudButton";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -14,6 +15,7 @@ export function ArticleMeta({
   publishedAt,
   updatedAt,
   readTimeMinutes,
+  bodyText,
 }: {
   authorName: string;
   authorSlug: string;
@@ -22,6 +24,7 @@ export function ArticleMeta({
   publishedAt: string;
   updatedAt?: string;
   readTimeMinutes: number;
+  bodyText: string;
 }) {
   return (
     <div className="max-w-content mx-auto px-6 mt-6 flex items-center justify-between gap-3 border-y border-obsidian-grey/10 py-4">
@@ -39,6 +42,7 @@ export function ArticleMeta({
         </div>
       </div>
       <div className="flex items-center gap-2">
+        <ReadAloudButton text={bodyText} lang={locale === "am" ? "am" : "en"} />
         <FontSizeControl />
         <SaveButton articleSlug={articleSlug} locale={locale} />
       </div>

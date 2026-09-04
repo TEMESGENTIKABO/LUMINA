@@ -66,7 +66,7 @@ export async function Header({ locale, breakingItems }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 bg-parchment-white/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
-      
+      <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-1 focus:left-2 focus:z-[60] focus:bg-aksum-black focus:text-parchment-white focus:px-3 focus:py-1.5 focus:text-xs focus:font-ui focus:rounded-sm focus:ring-2 focus:ring-manuscript-red/50"
       >

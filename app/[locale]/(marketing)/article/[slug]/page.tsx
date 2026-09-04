@@ -16,6 +16,8 @@ import { buildArticleMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { ViewTracker } from "@/components/article/ViewTracker";
 import { buildArticleJsonLd } from "@/lib/structuredData";
+import { tiptapDocToPlainText } from "@/lib/tiptapDoc"; // Added import
+
 export async function generateMetadata({
   params,
 }: {
@@ -26,7 +28,9 @@ export async function generateMetadata({
   if (!article) return {};
   return buildArticleMetadata({ ...article, locale });
 }
+
 export const revalidate = 300; // article pages refresh at most every 5 minutes
+
 export default async function ArticlePage({
   params,
 }: {
@@ -46,6 +50,13 @@ export default async function ArticlePage({
   );
   const related = await getRelatedArticles(article.slug, article.category);
   const url = `https://aksum.example.com/${locale}/article/${article.slug}`;
+
+  // Generate body text for ArticleMeta
+  const bodyText = `${article.title_en}. ${article.dek_en}. ${tiptapDocToPlainText(
+    locale === "am" && article.hasAmharicBody
+      ? article.body_am
+      : article.body_en,
+  )}`;
 
   return (
     <>
@@ -78,6 +89,7 @@ export default async function ArticlePage({
           publishedAt={article.publishedAt}
           updatedAt={article.updatedAt}
           readTimeMinutes={article.readTimeMinutes}
+          bodyText={bodyText} // Added prop
         />
         <HeroImage
           src={article.heroImageUrl}
