@@ -13,6 +13,8 @@ import {
   MessageSquare,
   FileClock,
 } from "lucide-react";
+import { CalendarDays } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import type { Role } from "@prisma/client";
 import { Video as VideoIcon, Mic, Newspaper } from "lucide-react";
 import { Key } from "lucide-react";
@@ -109,6 +111,18 @@ const navItems: NavItem[] = [
     href: "/admin/settings",
     icon: Settings,
     roles: ["ADMIN"],
+  },
+  {
+    label: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart3,
+    roles: ["ADMIN", "EDITOR"],
+  },
+  {
+    label: "Calendar",
+    href: "/admin/calendar",
+    icon: CalendarDays,
+    roles: ["ADMIN", "EDITOR", "AUTHOR"],
   },
 ];
 

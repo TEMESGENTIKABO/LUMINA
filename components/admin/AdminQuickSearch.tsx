@@ -18,7 +18,6 @@ export function AdminQuickSearch() {
 
   useEffect(() => {
     if (!query.trim() || query.trim().length < 2) {
-      setResults(null);
       return;
     }
     const timeout = setTimeout(() => {
@@ -28,6 +27,12 @@ export function AdminQuickSearch() {
     }, 200);
     return () => clearTimeout(timeout);
   }, [query]);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    if (value.trim().length < 2) setResults(null);
+    setOpen(true);
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -45,7 +50,7 @@ export function AdminQuickSearch() {
         <Search size={14} className="text-obsidian-grey" />
         <input
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onChange={(e) => handleQueryChange(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="Quick search..."
           className="font-ui text-sm bg-transparent outline-none w-48"

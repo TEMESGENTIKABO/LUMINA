@@ -26,6 +26,8 @@ import { getMostDiscussed } from "@/content/cms/fetchers/getMostDiscussed";
 import { getForYouArticles } from "@/content/cms/fetchers/getForYouArticles";
 import { buildHomepageMetadata } from "@/lib/seo";
 import { auth } from "@/auth";
+import { getReadingHistory } from "@/content/cms/fetchers/getReadingHistory";
+import { ContinueReadingRail } from "@/components/homepage/ContinueReadingRail";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -73,7 +75,13 @@ export default async function HomePage({
     getAllShows(),
     getMostDiscussed(),
   ]);
-
+const session = await auth();
+const forYouArticles = session?.user?.id
+  ? await getForYouArticles(session.user.id)
+  : [];
+const readingHistory = session?.user?.id
+  ? await getReadingHistory(session.user.id)
+  : [];
   const firstShowEpisodes = shows[0]
     ? ((await getShowBySlug(shows[0].slug))?.episodes ?? []).map((episode) => ({
         ...episode,
@@ -85,12 +93,6 @@ export default async function HomePage({
           : "",
         showSlug: shows[0].slug,
       }))
-    : [];
-
-  // Personalized content - fetched per-request based on session
-  const session = await auth();
-  const forYouArticles = session?.user?.id
-    ? await getForYouArticles(session.user.id)
     : [];
 
   return (
@@ -117,6 +119,7 @@ export default async function HomePage({
       <PodcastCarousel episodes={firstShowEpisodes} locale={locale} />
       <NewsletterBand />
       <CommunityModule discussed={discussed} events={events} locale={locale} />
+      <ContinueReadingRail articles={readingHistory} locale={locale} />
       <ForYouRail articles={forYouArticles} locale={locale} />
     </>
   );

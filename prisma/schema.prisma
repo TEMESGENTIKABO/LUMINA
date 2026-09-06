@@ -392,9 +392,11 @@ model EditionArticle {
 model PageView {
   id          String   @id @default(cuid())
   articleSlug String
+  userId      String?
   createdAt   DateTime @default(now())
 
   @@index([articleSlug, createdAt])
+  @@index([userId, createdAt])
 }
 
 model PushSubscription {
@@ -442,3 +444,5 @@ model ApiKey {
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
 }
+
+// userId added to PageView below via separate edit

@@ -11,22 +11,35 @@ interface PreviewArticle { slug: string; title_en: string; heroImageUrl: string 
 export function PrimaryNav({ locale, activeSlug }: { locale: string; activeSlug?: string }) {
   const t = useTranslations();
   const [preview, setPreview] = useState<Record<string, PreviewArticle | null | "loading">>({});
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
-  function handleHover(slug: string) {
+  function handleEnter(slug: string) {
+    setOpenSlug(slug);
     if (preview[slug] !== undefined) return;
     setPreview((prev) => ({ ...prev, [slug]: "loading" }));
     fetch(`/api/nav-preview?category=${slug}`)
       .then((res) => res.json())
-      .then((data) => setPreview((prev) => ({ ...prev, [slug]: data.article })));
+      .then((data) => setPreview((prev) => ({ ...prev, [slug]: data.article ?? null })))
+      .catch(() => setPreview((prev) => ({ ...prev, [slug]: null })));
   }
 
   return (
-    <nav className="flex items-center justify-center gap-8 h-11 overflow-x-auto">
-      {primaryNav.map((item) => {
+    <nav className="flex items-center justify-center gap-8 h-11">
+      {primaryNav.map((item, index) => {
         const isActive = item.slug === activeSlug;
         const p = preview[item.slug];
+        const isOpen = openSlug === item.slug;
+        // Anchor left for the first couple of items (would otherwise clip off
+        // the left edge of the viewport), right for the last couple, center otherwise.
+        const anchorClass = index <= 1 ? "left-0" : index >= primaryNav.length - 2 ? "right-0" : "left-1/2 -translate-x-1/2";
+
         return (
-          <div key={item.slug} className="group relative h-full flex items-center" onMouseEnter={() => handleHover(item.slug)}>
+          <div
+            key={item.slug}
+            className="relative h-full flex items-center"
+            onMouseEnter={() => handleEnter(item.slug)}
+            onMouseLeave={() => setOpenSlug(null)}
+          >
             <Link
               href={`/${locale}/${item.slug}`}
               className={`section-label whitespace-nowrap ${isActive ? "text-manuscript-red" : "text-obsidian-grey hover:text-aksum-black"}`}
@@ -34,8 +47,8 @@ export function PrimaryNav({ locale, activeSlug }: { locale: string; activeSlug?
               {t(item.labelKey)}
             </Link>
 
-            {item.subItems && (
-              <div className="absolute left-1/2 -translate-x-1/2 top-full hidden group-hover:flex bg-parchment-white border border-hairline-strong shadow-lg z-50 min-w-[420px]">
+            {item.subItems && isOpen && (
+              <div className={`absolute ${anchorClass} top-full flex bg-parchment-white border border-hairline-strong shadow-lg z-50 min-w-[420px]`}>
                 <div className="flex flex-col py-2 min-w-[190px] hairline-y border-r border-hairline">
                   {item.subItems.map((sub) => (
                     <Link
