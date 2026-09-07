@@ -1,5 +1,6 @@
 import { auth, signOut } from "@/auth";
 import { LogOut, Clock } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 
 const roleStyles: Record<string, { bg: string; text: string; label: string }> =
   {
@@ -63,6 +64,9 @@ export async function AdminTopbar() {
           <span className="font-ui text-xs text-[#a5a39e]">{dateString}</span>
         </div>
       </div>
+
+      {/* Notification Bell - Center */}
+      <NotificationBell />
 
       {/* Right: User & Actions */}
       <div className="flex items-center gap-4">

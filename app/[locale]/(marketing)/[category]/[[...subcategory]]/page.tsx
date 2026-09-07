@@ -6,6 +6,7 @@ import { CategoryHero } from "@/components/category/CategoryHero";
 import { CategoryFeed } from "@/components/category/CategoryFeed";
 import { MostReadRail } from "@/components/category/MostReadRail";
 import { buildCategoryMetadata } from "@/lib/seo";
+import { InfiniteCategoryFeed } from "@/components/category/InfiniteCategoryFeed";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -63,6 +64,11 @@ export default async function CategoryPage({ params }: Props) {
             <div className="lg:col-span-3">
               <CategoryFeed articles={feedArticles} locale={locale} />
             </div>
+            <InfiniteCategoryFeed
+              categorySlug={activeSubcategory ?? category}
+              locale={locale}
+              initialHasMore={articles.length > 9}
+            />
             <MostReadRail articles={mostRead} locale={locale} />
           </div>
         </>
