@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Clock, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Panel, Empty } from "./DashboardWidgets";
+import { initials } from "./RecentActivity";
 
 interface InReviewArticle {
   id: string;
@@ -15,51 +16,17 @@ interface RecentComment {
   user: { name: string | null; email: string | null };
 }
 
-function Panel({
-  title,
-  count,
-  icon,
-  tone,
-  children,
+const Avatar = ({
+  name,
+  email,
 }: {
-  title: string;
-  count?: number;
-  icon: React.ReactNode;
-  tone: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="bg-white rounded-2xl border border-[#e5e3df] shadow-[0_1px_2px_rgba(26,28,35,0.04)] overflow-hidden">
-      <header className="flex items-center justify-between px-5 py-4 border-b border-[#f0eeea]">
-        <div className="flex items-center gap-3">
-          <span
-            className={`w-8 h-8 rounded-lg flex items-center justify-center ${tone}`}
-          >
-            {icon}
-          </span>
-          <h2 className="font-headline-en text-sm font-semibold text-[#1a1c23]">
-            {title}
-          </h2>
-        </div>
-        {count !== undefined && count > 0 && (
-          <span className="px-2 py-0.5 rounded-full bg-[#f5f4f2] font-ui text-xs font-medium text-[#6b6f7a] tabular-nums">
-            {count}
-          </span>
-        )}
-      </header>
-      <div className="p-2">{children}</div>
-    </section>
-  );
-}
-
-function Empty({ text }: { text: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 py-8">
-      <CheckCircle2 size={20} className="text-[#b8b5b0]" />
-      <p className="font-ui text-sm text-[#8b8f99]">{text}</p>
-    </div>
-  );
-}
+  name: string | null;
+  email: string | null;
+}) => (
+  <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-aksum-black text-[11px] font-extrabold text-[#c79a45]">
+    {initials(name, email)}
+  </span>
+);
 
 export function NeedsAttention({
   inReview,
@@ -71,29 +38,42 @@ export function NeedsAttention({
   if (inReview.length === 0 && recentComments.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div className="mb-6 grid gap-5 lg:grid-cols-2">
       <Panel
-        title="Awaiting Review"
-        count={inReview.length}
-        icon={<Clock size={15} />}
-        tone="bg-[#eef4f8] text-[#4a7c9b]"
+        title="Awaiting review"
+        aside={inReview.length}
+        className={
+          inReview.length
+            ? "border-[#e2cf9f] bg-gradient-to-b from-[#fbf6e8] to-white"
+            : ""
+        }
       >
         {inReview.length === 0 ? (
-          <Empty text="Nothing waiting for review." />
+          <Empty>Nothing is waiting for review.</Empty>
         ) : (
-          <ul>
+          <ul className="divide-y divide-[#f0ece1]">
             {inReview.map((a) => (
-              <li key={a.id}>
+              <li
+                key={a.id}
+                className="flex items-center gap-3.5 px-5 py-3.5 transition hover:bg-white/70"
+              >
+                <Avatar name={a.author.name} email={a.author.email} />
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/admin/articles/${a.id}`}
+                    className="block truncate text-sm font-semibold hover:text-[#8a6414]"
+                  >
+                    {a.title_en}
+                  </Link>
+                  <div className="truncate text-xs text-[#6b665c]">
+                    {a.author.name ?? a.author.email}
+                  </div>
+                </div>
                 <Link
                   href={`/admin/articles/${a.id}`}
-                  className="flex items-center justify-between gap-4 px-3 py-2.5 rounded-xl hover:bg-[#faf9f7] transition-colors group"
+                  className="rounded-lg border border-[#e6e1d6] bg-white px-3 py-1.5 text-xs font-semibold transition hover:border-[#c79a45]"
                 >
-                  <span className="font-ui text-sm font-medium text-[#1a1c23] group-hover:text-[#9a7b1a] truncate transition-colors">
-                    {a.title_en}
-                  </span>
-                  <span className="font-ui text-xs text-[#8b8f99] flex-shrink-0">
-                    {a.author.name ?? a.author.email}
-                  </span>
+                  Review
                 </Link>
               </li>
             ))}
@@ -101,30 +81,25 @@ export function NeedsAttention({
         )}
       </Panel>
 
-      <Panel
-        title="Recent Comments"
-        count={recentComments.length}
-        icon={<MessageSquare size={15} />}
-        tone="bg-[#faf6e8] text-[#b08d1a]"
-      >
+      <Panel title="Recent comments" aside={recentComments.length}>
         {recentComments.length === 0 ? (
-          <Empty text="No comments yet." />
+          <Empty>No comments yet.</Empty>
         ) : (
-          <ul>
+          <ul className="divide-y divide-[#f0ece1]">
             {recentComments.map((c) => (
               <li
                 key={c.id}
-                className="px-3 py-2.5 rounded-xl hover:bg-[#faf9f7] transition-colors"
+                className="flex items-center gap-3.5 px-5 py-3.5 transition hover:bg-[#faf8f3]"
               >
-                <p className="font-ui text-xs text-[#8b8f99]">
-                  <span className="font-medium text-[#6b6f7a]">
-                    {c.user.name ?? c.user.email}
-                  </span>{" "}
-                  on {c.articleSlug}
-                </p>
-                <p className="font-ui text-sm text-[#1a1c23] truncate mt-0.5">
-                  {c.content}
-                </p>
+                <Avatar name={c.user.name} email={c.user.email} />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold">
+                    {c.content}
+                  </div>
+                  <div className="truncate text-xs text-[#6b665c]">
+                    {c.user.name ?? c.user.email} on {c.articleSlug}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

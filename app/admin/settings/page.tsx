@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "./SettingsForm";
 import { ThemeSchedules } from "./ThemeSchedules";
+import { PageHeader } from "@/components/admin/ui";
+
 export default async function SettingsPage() {
   const settings = await prisma.siteSettings.upsert({
     where: { id: "singleton" },
@@ -11,20 +13,26 @@ export default async function SettingsPage() {
     orderBy: { startsAt: "desc" },
     take: 20,
   });
-  // after <SettingsForm …/>:
+
   return (
-    <div>
-      <h1 className="font-headline-en text-2xl mb-6">Settings</h1>
+    <div className="mx-auto w-full max-w-[1440px]">
+      <PageHeader eyebrow="Configuration" title="Settings">
+        Your site&apos;s identity, search presence, social links and look.
+      </PageHeader>
+
       <SettingsForm initial={settings} />
-      <ThemeSchedules
-        schedules={schedules.map((s) => ({
-          id: s.id,
-          name: s.name,
-          theme: s.theme,
-          startsAt: s.startsAt.toISOString(),
-          endsAt: s.endsAt.toISOString(),
-        }))}
-      />
+
+      <div className="mt-12">
+        <ThemeSchedules
+          schedules={schedules.map((s) => ({
+            id: s.id,
+            name: s.name,
+            theme: s.theme,
+            startsAt: s.startsAt.toISOString(),
+            endsAt: s.endsAt.toISOString(),
+          }))}
+        />
+      </div>
     </div>
   );
 }

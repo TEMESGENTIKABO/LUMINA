@@ -33,9 +33,9 @@ export default async function AdminLayout({
     <SessionProvider session={session}>
       <div className="flex min-h-screen bg-parchment-white text-aksum-black">
         <AdminSidebar role={session.user.role} />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col">
           <AdminTopbar theme={theme} />
-          <main className="flex-1 p-8">{children}</main>
+          <main className="flex-1 p-6 lg:p-8">{children}</main>
         </div>
         <CommandPaletteWrapper />
         <AdminKeyboardShortcuts />

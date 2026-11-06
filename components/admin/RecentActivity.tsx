@@ -1,7 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { Clock, FileText, ArrowUpRight } from "lucide-react";
+import { FileText } from "lucide-react";
+import { Panel, Empty } from "./DashboardWidgets";
 
 interface ActivityArticle {
   id: string;
@@ -12,159 +11,88 @@ interface ActivityArticle {
   category: { name_en: string };
 }
 
-const statusConfig: Record<
-  string,
-  { label: string; dot: string; text: string; bg: string }
-> = {
-  DRAFT: {
-    label: "Draft",
-    dot: "bg-[#8b8f99]",
-    text: "text-[#6b6f7a]",
-    bg: "bg-[#f5f4f2]",
-  },
-  IN_REVIEW: {
-    label: "In Review",
-    dot: "bg-[#4a7c9b]",
-    text: "text-[#4a7c9b]",
-    bg: "bg-[#eef4f8]",
-  },
-  SCHEDULED: {
-    label: "Scheduled",
-    dot: "bg-[#c9a227]",
-    text: "text-[#9a7b1a]",
-    bg: "bg-[#faf6e8]",
-  },
-  PUBLISHED: {
-    label: "Published",
-    dot: "bg-[#4a7c6b]",
-    text: "text-[#4a7c6b]",
-    bg: "bg-[#eef5f2]",
-  },
-  ARCHIVED: {
-    label: "Archived",
-    dot: "bg-[#b8b5b0]",
-    text: "text-[#8b8f99]",
-    bg: "bg-[#f5f4f2]",
-  },
+const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
+  DRAFT: { label: "Draft", bg: "#f1efe9", fg: "#5b564c" },
+  IN_REVIEW: { label: "In review", bg: "#e8f0fa", fg: "#245a8d" },
+  SCHEDULED: { label: "Scheduled", bg: "#fbf1d9", fg: "#8a6414" },
+  PUBLISHED: { label: "Published", bg: "#e7f5ee", fg: "#1b6b4a" },
+  ARCHIVED: { label: "Archived", bg: "#eeeeec", fg: "#6b665c" },
 };
 
-function formatRelativeTime(d: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - new Date(d).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
+function ago(d: Date) {
+  const diff = Date.now() - new Date(d).getTime();
+  const m = Math.floor(diff / 60000),
+    h = Math.floor(diff / 3600000),
+    days = Math.floor(diff / 86400000);
+  if (m < 1) return "Just now";
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
   if (days < 7) return `${days}d ago`;
   return new Date(d).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
 }
-
-function getInitials(name: string | null, email: string | null): string {
-  if (name)
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  return email?.slice(0, 2).toUpperCase() ?? "??";
-}
+export const initials = (name: string | null, email: string | null) =>
+  (name
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+    : (email ?? "?")
+  )
+    .slice(0, 2)
+    .toUpperCase();
 
 export function RecentActivity({ articles }: { articles: ActivityArticle[] }) {
   return (
-    <div className="border border-[#e5e3df] bg-white rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(26,28,35,0.04)]">
-      <div className="px-5 py-4 border-b border-[#f0eeea] bg-white flex items-center justify-between">
-        <h2 className="font-headline-en text-sm font-semibold text-[#1a1c23] tracking-tight">
-          Recent Activity
-        </h2>
-        <span className="font-ui text-[11px] text-[#a5a39e] uppercase tracking-wider">
-          {articles.length} {articles.length === 1 ? "article" : "articles"}
-        </span>
-      </div>
-
+    <Panel
+      title="Recent activity"
+      aside={`${articles.length} ${articles.length === 1 ? "article" : "articles"}`}
+    >
       {articles.length === 0 ? (
-        <div className="px-5 py-10 flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#f5f4f2] flex items-center justify-center">
-            <FileText size={18} className="text-[#b8b5b0]" />
-          </div>
-          <div className="text-center">
-            <p className="font-ui text-sm text-[#6b6f7a]">No recent activity</p>
-            <p className="font-ui text-xs text-[#a5a39e] mt-1">
-              Articles will appear here once created.
-            </p>
-          </div>
-        </div>
+        <Empty>
+          <FileText className="mx-auto mb-2" size={22} />
+          Articles will appear here once created.
+        </Empty>
       ) : (
-        <ul className="divide-y divide-[#f0eeea]">
-          {articles.map((article) => {
-            const status = statusConfig[article.status] ?? statusConfig.DRAFT;
-
+        <ul className="divide-y divide-[#f0ece1]">
+          {articles.map((a) => {
+            const s = STATUS[a.status] ?? STATUS.DRAFT;
             return (
               <li
-                key={article.id}
-                className="px-5 py-3.5 flex items-center gap-4 hover:bg-[#faf9f7] transition-colors duration-100 group"
+                key={a.id}
+                className="flex items-center gap-3.5 px-5 py-3.5 transition hover:bg-[#faf8f3]"
               >
-                {/* Author Initials */}
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1e2028] to-[#2e313b] flex items-center justify-center flex-shrink-0">
-                  <span className="font-ui text-[10px] font-semibold text-[#c9a227]">
-                    {getInitials(article.author.name, article.author.email)}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/admin/articles/${article.id}`}
-                      className="font-ui text-sm font-medium text-[#1a1c23] hover:text-[#c9a227] transition-colors truncate"
-                    >
-                      {article.title_en}
-                    </Link>
-                    <ArrowUpRight
-                      size={12}
-                      className="text-[#d4d2cd] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                    />
-                  </div>
-                  <p className="font-ui text-[11px] text-[#8b8f99] mt-0.5 truncate">
-                    {article.author.name ?? article.author.email}
-                    <span className="text-[#d4d2cd] mx-1.5">·</span>
-                    <span className="text-[#a5a39e]">
-                      {article.category.name_en}
-                    </span>
-                  </p>
-                </div>
-
-                {/* Meta */}
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  {/* Status Pill */}
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-ui text-[10px] font-medium uppercase tracking-wider ${status.bg} ${status.text}`}
+                <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-aksum-black text-[11px] font-extrabold text-[#c79a45]">
+                  {initials(a.author.name, a.author.email)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/admin/articles/${a.id}`}
+                    className="block truncate text-sm font-semibold hover:text-[#8a6414]"
                   >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${status.dot}`}
-                    />
-                    {status.label}
-                  </span>
-
-                  {/* Time */}
-                  <div className="flex items-center gap-1.5 text-[#a5a39e] w-20 justify-end">
-                    <Clock size={11} />
-                    <span className="font-ui text-[11px] tabular-nums">
-                      {formatRelativeTime(article.updatedAt)}
-                    </span>
+                    {a.title_en}
+                  </Link>
+                  <div className="truncate text-xs text-[#6b665c]">
+                    {a.author.name ?? a.author.email} · {a.category.name_en}
                   </div>
                 </div>
+                <span
+                  className="hidden items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-extrabold uppercase tracking-wide sm:inline-flex"
+                  style={{ background: s.bg, color: s.fg }}
+                >
+                  <i className="h-1.5 w-1.5 rounded-full bg-current" />{" "}
+                  {s.label}
+                </span>
+                <span className="w-16 flex-none text-right text-xs text-[#6b665c]">
+                  {ago(a.updatedAt)}
+                </span>
               </li>
             );
           })}
         </ul>
       )}
-    </div>
+    </Panel>
   );
 }
