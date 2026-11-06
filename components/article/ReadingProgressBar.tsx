@@ -1,28 +1,41 @@
-// ReadingProgressBar.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function ReadingProgressBar() {
-  const [progress, setProgress] = useState(0);
+  const bar = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function onScroll() {
-      const scrollable =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const scrolled = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
-      setProgress(Math.min(100, Math.max(0, scrolled)));
-    }
+    let raf = 0;
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      if (bar.current) bar.current.style.transform = `scaleX(${p})`;
+      raf = 0;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[2px] bg-obsidian-grey/10 z-[60] backdrop-blur-sm">
+    <div
+      className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-black/5"
+      aria-hidden="true"
+    >
       <div
-        className="h-full bg-gradient-to-r from-aksum-gold via-aksum-gold/80 to-aksum-gold transition-[width] duration-150 ease-out"
-        style={{ width: `${progress}%` }}
+        ref={bar}
+        className="h-full origin-left"
+        style={{
+          background: "var(--hp-bandacc, #c79a45)",
+          transform: "scaleX(0)",
+        }}
       />
     </div>
   );

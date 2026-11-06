@@ -5,6 +5,10 @@ import Image from "next/image";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import { AIAssistPanel } from "@/components/admin/AIAssistPanel";
+import {
+  useAutosave,
+  AutosaveIndicator,
+} from "@/components/admin/AutosaveIndicator";
 
 interface Category {
   id: string;
@@ -44,6 +48,7 @@ export function ArticleForm({
   authors: Author[];
   initialAuthorId?: string;
   initial?: {
+    id?: string;
     title_en: string;
     title_am: string | null;
     dek_en: string;
@@ -62,7 +67,7 @@ export function ArticleForm({
     readTimeMinutes: number;
     body_en: object;
     body_am: object | null;
-    isBreaking?: boolean; // Added isBreaking to initial prop type
+    isBreaking?: boolean;
   };
   onSubmit: (
     bodyJson: object,
@@ -99,6 +104,16 @@ export function ArticleForm({
   // Initialize checked topics
   const [checkedTopics, setCheckedTopics] = useState<string[]>(
     initial?.topicIds ?? [],
+  );
+
+  // Autosave integration - only activates when article has an ID (edit mode)
+  const autosaveStatus = useAutosave(
+    initial?.id,
+    {
+      title_en: titleEn,
+      dek_en: dekEn,
+      body_en: bodyJson,
+    },
   );
 
   function handleSubmit(formData: FormData) {
@@ -464,6 +479,9 @@ export function ArticleForm({
         {error && (
           <p className="font-ui text-xs text-manuscript-red">{error}</p>
         )}
+
+        {/* Autosave indicator positioned above the save button */}
+        <AutosaveIndicator status={autosaveStatus} />
 
         <button
           type="submit"

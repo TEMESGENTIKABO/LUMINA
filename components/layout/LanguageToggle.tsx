@@ -32,7 +32,7 @@ export function LanguageToggle({ currentLocale }: LanguageToggleProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-1.5 text-neutral-500 hover:text-parchment-white transition-colors duration-200 text-[11px] font-ui font-medium tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manuscript-red/50 rounded-sm px-1 py-0.5"
+      className="flex items-center gap-1.5 rounded-sm px-1 py-0.5 font-ui text-xs font-semibold tracking-wide text-obsidian-grey/70 transition-colors duration-200 hover:text-aksum-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksum-gold"
       aria-label={`Switch language to ${label}`}
       title={label}
     >

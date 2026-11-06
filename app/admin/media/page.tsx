@@ -1,17 +1,22 @@
 import { prisma } from "@/lib/prisma";
-import { MediaUploader } from "@/components/admin/MediaUploader";
-import { MediaGrid } from "@/components/admin/MediaGrid";
+import { MediaManager } from "@/components/admin/MediaManager";
 
 export default async function MediaPage() {
-  const media = await prisma.media.findMany({ orderBy: { createdAt: "desc" } });
+  const media = await prisma.media.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
-    <div>
-      <h1 className="font-headline-en text-2xl mb-6">Media Library</h1>
-      <div className="mb-8 max-w-lg">
-        <MediaUploader />
+    <div className="max-w-[1440px] mx-auto py-8 px-6">
+      <div className="mb-8">
+        <h1 className="font-headline-en text-3xl font-bold text-[#12100d] mb-1">
+          Media Library
+        </h1>
+        <p className="font-ui text-sm text-[#6b665c]">
+          Manage all images across your site.
+        </p>
       </div>
-      <MediaGrid items={media} mode="browse" />
+      <MediaManager initialItems={media} />
     </div>
   );
 }

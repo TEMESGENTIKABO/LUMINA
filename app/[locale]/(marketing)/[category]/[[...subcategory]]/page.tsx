@@ -1,18 +1,25 @@
+import "@/components/homepage/home.css";
+import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 import {
   getArticlesByCategory,
   getMostReadInCategory,
 } from "@/content/cms/fetchers/getArticlesByCategory";
 import { CategoryHero } from "@/components/category/CategoryHero";
 import { CategoryFeed } from "@/components/category/CategoryFeed";
+import { CategoryPills } from "@/components/category/CategoryPills";
 import { MostReadRail } from "@/components/category/MostReadRail";
-import { buildCategoryMetadata } from "@/lib/seo";
 import { InfiniteCategoryFeed } from "@/components/category/InfiniteCategoryFeed";
-import type { Metadata } from "next";
+import { SectionHead } from "@/components/homepage/SectionHead";
+import { getLabels } from "@/lib/labels";
+import { buildCategoryMetadata } from "@/lib/seo";
+
+type Params = { locale: string; category: string; subcategory?: string[] };
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: string; category: string; subcategory?: string[] }>;
+  params: Promise<Params>;
 }): Promise<Metadata> {
   const { locale, category, subcategory } = await params;
   const name = subcategory?.[0] ?? category;
@@ -22,57 +29,70 @@ export async function generateMetadata({
     subcategory ? `${category}/${subcategory[0]}` : category,
   );
 }
-interface Props {
-  params: Promise<{
-    locale: string;
-    category: string;
-    subcategory?: string[];
-  }>;
-}
+
 export const revalidate = 120;
-export default async function CategoryPage({ params }: Props) {
+
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
   const { locale, category, subcategory } = await params;
-  const activeSubcategory = subcategory?.[0];
+  const active = subcategory?.[0];
+  const L = getLabels(locale);
 
-  const articles = await getArticlesByCategory(category, activeSubcategory);
-  const mostRead = await getMostReadInCategory(category);
+  const [articles, mostRead, parent] = await Promise.all([
+    getArticlesByCategory(category, active),
+    getMostReadInCategory(category),
+    prisma.category.findUnique({ where: { slug: category } }),
+  ]);
+  const subs = parent
+    ? (
+        await prisma.category.findMany({
+          where: { parentId: parent.id },
+          orderBy: { name_en: "asc" },
+        })
+      ).map((c) => ({
+        slug: c.slug,
+        name: locale === "am" && c.name_am ? c.name_am : c.name_en,
+      }))
+    : [];
 
-  const heroArticles = articles.slice(0, 3);
-  const feedArticles = articles.slice(3);
+  const title = active
+    ? (subs.find((s) => s.slug === active)?.name ?? active)
+    : (parent?.name_en ?? category);
 
   return (
-    <main className="max-w-page mx-auto px-6 pt-8">
-      <div className="mb-8">
-        <h1 className="font-headline-en text-[length:var(--text-headline-xl)] capitalize">
-          {activeSubcategory ?? category}
-        </h1>
-        {activeSubcategory && (
-          <p className="font-ui text-[length:var(--text-meta)] text-obsidian-grey mt-1 capitalize">
-            {category} / {activeSubcategory}
-          </p>
+    <div className="hp">
+      <div className="hp-w" style={{ padding: "36px 20px 64px" }}>
+        <SectionHead kicker={active ? category : L.allStories} title={title} />
+        <CategoryPills
+          locale={locale}
+          category={category}
+          subs={subs}
+          active={active}
+          allLabel={L.allStories}
+        />
+
+        {articles.length === 0 ? (
+          <p style={{ color: "var(--hp-mut)" }}>{L.noStories}</p>
+        ) : (
+          <>
+            <CategoryHero articles={articles.slice(0, 3)} locale={locale} />
+            <div className="hp-main" style={{ marginTop: 8 }}>
+              <div>
+                <CategoryFeed articles={articles.slice(3)} locale={locale} />
+                <InfiniteCategoryFeed
+                  categorySlug={active ?? category}
+                  locale={locale}
+                  initialHasMore={articles.length > 9}
+                />
+              </div>
+              <MostReadRail articles={mostRead} locale={locale} />
+            </div>
+          </>
         )}
       </div>
-
-      {articles.length === 0 ? (
-        <p className="font-ui text-sm text-obsidian-grey pb-16">
-          No stories published in this section yet.
-        </p>
-      ) : (
-        <>
-          <CategoryHero articles={heroArticles} locale={locale} />
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pb-16">
-            <div className="lg:col-span-3">
-              <CategoryFeed articles={feedArticles} locale={locale} />
-            </div>
-            <InfiniteCategoryFeed
-              categorySlug={activeSubcategory ?? category}
-              locale={locale}
-              initialHasMore={articles.length > 9}
-            />
-            <MostReadRail articles={mostRead} locale={locale} />
-          </div>
-        </>
-      )}
-    </main>
+    </div>
   );
 }

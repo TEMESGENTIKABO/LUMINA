@@ -1,52 +1,106 @@
+import "../homepage/home.css"; // theme colours
+import "./footer.css";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import {
+  IconBrandFacebook,
+  IconBrandInstagram,
+  IconBrandWhatsapp,
+  IconBrandX,
+} from "@tabler/icons-react";
 import { getSiteSettings } from "@/content/cms/fetchers/getSiteSettings";
+import { footerColumns } from "@/config/headerNav";
+import { Emblem } from "./header/Emblem";
+import { BackToTop, FooterLang } from "./FooterTools";
+import { DataSaverToggle } from "./DataSaver";
 
 export async function Footer({ locale }: { locale: string }) {
   const t = await getTranslations();
   const settings = await getSiteSettings();
   const year = new Date().getFullYear();
-  const tagline = locale === "am" && settings.tagline_am ? settings.tagline_am : settings.tagline_en;
+  const tagline =
+    locale === "am" && settings.tagline_am
+      ? settings.tagline_am
+      : settings.tagline_en;
 
-  const socialLinks = [
-    { url: settings.twitterUrl, label: "X" },
-    { url: settings.facebookUrl, label: "Facebook" },
-    { url: settings.instagramUrl, label: "Instagram" },
-    { url: settings.whatsappUrl, label: "WhatsApp" },
+  const socials = [
+    { url: settings.twitterUrl, label: "X", Icon: IconBrandX },
+    { url: settings.facebookUrl, label: "Facebook", Icon: IconBrandFacebook },
+    {
+      url: settings.instagramUrl,
+      label: "Instagram",
+      Icon: IconBrandInstagram,
+    },
+    { url: settings.whatsappUrl, label: "WhatsApp", Icon: IconBrandWhatsapp },
   ].filter((s) => s.url);
 
   return (
-    <footer className="hairline-t mt-16">
-      <div className="max-w-page mx-auto px-6 py-10 flex flex-col sm:flex-row justify-between gap-6">
-        <div>
-          <p className="font-headline-en text-lg font-bold">{settings.siteName}</p>
-          <p className="font-ui text-sm text-obsidian-grey">{tagline}</p>
-          {settings.contactEmail && (
-            <a href={`mailto:${settings.contactEmail}`} className="font-ui text-sm text-obsidian-grey hover:text-aksum-black mt-1 inline-block">
-              {settings.contactEmail}
-            </a>
-          )}
-        </div>
+    <footer className="ft">
+      <div className="ft-w">
+        <div className="ft-top">
+          <div className="ft-brand">
+            <Link
+              href={`/${locale}`}
+              className="ft-logo"
+              aria-label={settings.siteName}
+            >
+              <Emblem className="ft-emb" />
+              <span className="ft-name hp-serif">{settings.siteName}</span>
+            </Link>
+            <p className="ft-tag">{tagline}</p>
 
-        {socialLinks.length > 0 && (
-          <div className="flex gap-4">
-            {socialLinks.map((s) => (
-              <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" className="section-label text-obsidian-grey hover:text-aksum-black">
-                {s.label}
+            {settings.contactEmail && (
+              <a href={`mailto:${settings.contactEmail}`} className="ft-mail">
+                {settings.contactEmail}
               </a>
-            ))}
-          </div>
-        )}
+            )}
 
-        <div className="flex gap-6">
-          <Link href={`/${locale}/topics`} className="section-label text-obsidian-grey hover:text-aksum-black">All Topics</Link>
-          <Link href={`/${locale}/events`} className="section-label text-obsidian-grey hover:text-aksum-black">Events</Link>
-          <Link href={`/${locale}/privacy`} className="section-label text-obsidian-grey hover:text-aksum-black">Privacy</Link>
+            {socials.length > 0 && (
+              <div className="ft-soc">
+                {socials.map(({ url, label, Icon }) => (
+                  <a
+                    key={label}
+                    href={url!}
+                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon size={17} stroke={1.8} />
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <Link href={`/${locale}/newsletters`} className="ft-cta">
+              Get the morning brief →
+            </Link>
+          </div>
+
+          {footerColumns.map((col) => (
+            <nav key={col.title} className="ft-col" aria-label={col.title}>
+              <h3>{col.title}</h3>
+              <ul>
+                {col.links.map((l) => (
+                  <li key={l.path}>
+                    <Link href={`/${locale}/${l.path}`}>{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
 
-        <p className="font-ui text-sm text-obsidian-grey tabular-nums">
-          &copy; {year} {settings.siteName}. {t("footer.rights")}
-        </p>
+        <div className="ft-bottom">
+          <p>
+            &copy; {year} {settings.siteName}. {t("footer.rights")}
+          </p>
+          <div className="ft-legal">
+            <Link href={`/${locale}/privacy`}>Privacy</Link>
+            <DataSaverToggle locale={locale} className="ft-saver" />
+            <FooterLang locale={locale} />
+            <BackToTop />
+          </div>
+        </div>
       </div>
     </footer>
   );

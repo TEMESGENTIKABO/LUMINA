@@ -1,8 +1,8 @@
-// RelatedStoriesEnd.tsx
-import { ArticleCard } from "@/components/ui/Card";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import "@/components/homepage/home.css";
+import { SectionHead } from "@/components/homepage/SectionHead";
+import { StoryCard } from "@/components/homepage/StoryCard";
+import { getLabels } from "@/lib/labels";
 import type { Article } from "@/content/types/Article";
-import { Newspaper } from "lucide-react";
 
 export function RelatedStoriesEnd({
   articles,
@@ -11,27 +11,23 @@ export function RelatedStoriesEnd({
   articles: Article[];
   locale: string;
 }) {
-  if (articles.length === 0) return null;
-
-  // Remove duplicate articles based on slug
-  const uniqueArticles = articles.filter(
-    (article, index, self) =>
-      index === self.findIndex((a) => a.slug === article.slug),
-  );
+  const unique = articles
+    .filter((a, i, all) => i === all.findIndex((x) => x.slug === a.slug))
+    .slice(0, 3);
+  if (unique.length === 0) return null;
+  const L = getLabels(locale);
 
   return (
-    <section className="max-w-page mx-auto px-6 mt-14 pt-8 border-t border-obsidian-grey/10">
-      <div className="flex items-center gap-3 mb-6">
-        <Newspaper className="text-obsidian-grey/40" size={20} />
-        <SectionHeader label="Related Coverage" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {uniqueArticles.map((article) => (
-          <div key={article.slug} className="hover:shadow-md transition-shadow">
-            <ArticleCard article={article} locale={locale} />
+    <section className="hp" style={{ marginTop: 56 }}>
+      <div className="hp-sec">
+        <div className="hp-w">
+          <SectionHead kicker={L.related} title={L.keepReading} />
+          <div className="hp-grid c3">
+            {unique.map((a) => (
+              <StoryCard key={a.slug} article={a} locale={locale} />
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );

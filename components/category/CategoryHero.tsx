@@ -1,32 +1,71 @@
 import Link from "next/link";
 import Image from "next/image";
+import { categoryTone } from "@/lib/categoryTone";
 import type { Article } from "@/content/types/Article";
 
-export function CategoryHero({ articles, locale }: { articles: Article[]; locale: string }) {
+export function CategoryHero({
+  articles,
+  locale,
+}: {
+  articles: Article[];
+  locale: string;
+}) {
   const [lead, ...rest] = articles.slice(0, 3);
   if (!lead) return null;
+  const am = locale === "am";
+  const t = (a: Article) => (am && a.title_am ? a.title_am : a.title_en);
+  const tone = categoryTone(lead.subcategory ?? lead.category);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 hairline-b pb-6">
-      <Link href={`/${locale}/article/${lead.slug}`} className="lg:col-span-2 group block">
-        <div className="relative aspect-[16/9] overflow-hidden bg-obsidian-grey/10">
-          <Image src={lead.heroImageUrl} alt={lead.title_en} fill sizes="(max-width: 1024px) 100vw, 66vw" className="object-cover" />
+    <div className="hp-hero" style={{ paddingTop: 8 }}>
+      <Link
+        href={`/${locale}/article/${lead.slug}`}
+        className="hp-card hp-lead"
+      >
+        <div className="hp-im">
+          <Image
+            src={lead.heroImageUrl}
+            alt={t(lead)}
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 60vw"
+          />
         </div>
-        <h2 className="font-headline-en text-[length:var(--text-headline-lg)] leading-[var(--leading-headline)] mt-3 group-hover:text-manuscript-red transition-colors">
-          {lead.title_en}
+        <span
+          className="hp-chip"
+          style={{ background: tone.bg, color: tone.fg }}
+        >
+          {lead.subcategory ?? lead.category}
+        </span>
+        <h2
+          className="hp-serif"
+          style={{
+            margin: "12px 0 10px",
+            fontSize: "clamp(1.7rem,3.2vw,2.5rem)",
+            lineHeight: 1.1,
+            fontWeight: 700,
+          }}
+        >
+          {t(lead)}
         </h2>
-        <p className="font-body-en text-[length:var(--text-body)] text-obsidian-grey mt-2 max-w-content">{lead.dek_en}</p>
+        <p className="hp-dek">
+          {am && lead.dek_am ? lead.dek_am : lead.dek_en}
+        </p>
       </Link>
-
-      <div className="flex flex-col divide-y divide-hairline">
-        {rest.map((article) => (
-          <Link key={article.slug} href={`/${locale}/article/${article.slug}`} className="group flex gap-3 py-3 first:pt-0">
-            <div className="relative w-20 aspect-[4/3] flex-shrink-0 overflow-hidden bg-obsidian-grey/10">
-              <Image src={article.heroImageUrl} alt={article.title_en} fill sizes="80px" className="object-cover" />
+      <div className="hp-side">
+        {rest.map((a) => (
+          <Link
+            key={a.slug}
+            href={`/${locale}/article/${a.slug}`}
+            className="hp-row"
+          >
+            <div className="hp-im">
+              <Image src={a.heroImageUrl} alt={t(a)} fill sizes="128px" />
             </div>
-            <h3 className="font-headline-en text-[length:var(--text-headline-sm)] leading-[var(--leading-headline)] group-hover:text-manuscript-red transition-colors">
-              {article.title_en}
-            </h3>
+            <div style={{ minWidth: 0 }}>
+              <h3>{t(a)}</h3>
+              <div className="hp-meta">{a.readTimeMinutes} min</div>
+            </div>
           </Link>
         ))}
       </div>

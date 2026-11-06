@@ -46,7 +46,7 @@ export function ConfirmDeleteButton({
         {confirming && !isPending && (
           <button
             onClick={handleCancel}
-            className="font-ui text-[11px] text-[#8b8f99] hover:text-[#1a1c23] px-1.5 py-1 transition-colors"
+            className="font-ui text-[11px] text-[#8b8f99] hover:text-[#1a1c23] hover:bg-[#f5f4f2] rounded-lg px-1.5 py-1.5 transition-colors"
             title="Cancel"
           >
             <X size={13} />
@@ -56,11 +56,11 @@ export function ConfirmDeleteButton({
           onClick={handleClick}
           disabled={isPending}
           className={`
-            inline-flex items-center gap-1.5 font-ui font-medium rounded-sm transition-all duration-150
+            inline-flex items-center gap-1.5 font-ui font-medium rounded-lg transition-all duration-150
             ${sizeClasses}
             ${
               confirming
-                ? "bg-[#3a1c1c] text-[#d4a5a5] hover:bg-[#4a2424]"
+                ? "bg-[#9b4a4a] text-white shadow-sm hover:bg-[#8a3f3f]"
                 : "text-[#8b8f99] hover:text-[#9b4a4a] hover:bg-[#faf5f5]"
             }
             ${isPending ? "opacity-60 cursor-not-allowed" : ""}
@@ -82,7 +82,7 @@ export function ConfirmDeleteButton({
       </div>
 
       {error && (
-        <div className="flex items-center gap-1.5 font-ui text-[11px] text-[#9b4a4a] bg-[#faf5f5] px-2 py-1 rounded-sm max-w-[240px]">
+        <div className="flex items-center gap-1.5 font-ui text-[11px] text-[#9b4a4a] bg-[#fbeeee] px-2.5 py-1.5 rounded-lg max-w-[240px]">
           <AlertCircle size={12} className="flex-shrink-0" />
           <span className="leading-tight">{error}</span>
         </div>

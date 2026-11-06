@@ -1,15 +1,24 @@
-import { ArticleCard } from "@/components/ui/Card";
+import { StoryCard } from "@/components/homepage/StoryCard";
+import { getLabels } from "@/lib/labels";
 import type { Article } from "@/content/types/Article";
 
-export function CategoryFeed({ articles, locale }: { articles: Article[]; locale: string }) {
-  if (articles.length === 0) {
-    return <p className="font-ui text-sm text-obsidian-grey py-8">No more stories in this section yet.</p>;
-  }
-
+export function CategoryFeed({
+  articles,
+  locale,
+}: {
+  articles: Article[];
+  locale: string;
+}) {
+  if (articles.length === 0)
+    return (
+      <p style={{ padding: "32px 0", color: "var(--hp-mut)" }}>
+        {getLabels(locale).noStories}
+      </p>
+    );
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 py-8">
-      {articles.map((article) => (
-        <ArticleCard key={article.slug} article={article} locale={locale} />
+    <div className="hp-grid c3" style={{ padding: "28px 0" }}>
+      {articles.map((a) => (
+        <StoryCard key={a.slug} article={a} locale={locale} />
       ))}
     </div>
   );

@@ -1,34 +1,47 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
 
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function AccountMenu({ locale }: { locale: string }) {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      )
+        setOpen(false);
     }
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
   if (!mounted || status === "loading") {
-    return <span className="w-16 h-4 inline-block" aria-hidden="true" />;
+    return <span className="inline-block h-8 w-14" aria-hidden="true" />;
   }
 
   if (!session) {
     return (
-      <Link href={`/${locale}/sign-in`} className="text-[11px] text-neutral-400 hover:text-white transition-colors">
-        Sign In
+      <Link
+        href={`/${locale}/sign-in`}
+        className="font-ui text-[12px] font-semibold opacity-85 transition-opacity hover:opacity-100"
+      >
+        Sign in
       </Link>
     );
   }
@@ -40,39 +53,67 @@ export function AccountMenu({ locale }: { locale: string }) {
     .join("")
     .toUpperCase();
 
-  const isStaff = ["ADMIN", "EDITOR", "AUTHOR"].includes((session.user as any)?.role);
+  const isStaff = ["ADMIN", "EDITOR", "AUTHOR"].includes(
+    (session.user as { role?: string } | undefined)?.role ?? "",
+  );
+  const item =
+    "block px-4 py-2 font-ui text-sm text-obsidian-grey hover:bg-obsidian-grey/5 hover:text-aksum-black";
 
   return (
     <div ref={containerRef} className="relative">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors">
-        <span className="w-5 h-5 rounded-full bg-amber-500 text-neutral-950 text-[9px] font-bold flex items-center justify-center">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-label="Account menu"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 opacity-85 transition-opacity hover:opacity-100"
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-aksum-gold text-[11px] font-bold text-[#12100d]">
           {initials}
         </span>
-        <ChevronDown size={12} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
+        <ChevronDown
+          size={14}
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-parchment-white border border-obsidian-grey/20 shadow-lg py-1 z-50">
-          <p className="px-4 py-2 font-ui text-xs text-obsidian-grey truncate border-b border-obsidian-grey/10">
+        <div className="absolute right-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-md border border-obsidian-grey/15 bg-parchment-white py-1 shadow-elevation">
+          <p className="truncate border-b border-obsidian-grey/10 px-4 py-2.5 font-ui text-xs text-obsidian-grey">
             {session.user?.name ?? session.user?.email}
           </p>
-          <Link href={`/${locale}/account`} onClick={() => setOpen(false)} className="block px-4 py-2 font-ui text-sm text-obsidian-grey hover:bg-obsidian-grey/5 hover:text-aksum-black">
+          <Link
+            href={`/${locale}/account`}
+            onClick={() => setOpen(false)}
+            className={item}
+          >
             My Account
           </Link>
-          <Link href={`/${locale}/account/saved`} onClick={() => setOpen(false)} className="block px-4 py-2 font-ui text-sm text-obsidian-grey hover:bg-obsidian-grey/5 hover:text-aksum-black">
+          <Link
+            href={`/${locale}/account/saved`}
+            onClick={() => setOpen(false)}
+            className={item}
+          >
             Saved Articles
           </Link>
-          <Link href={`/${locale}/account/following`} onClick={() => setOpen(false)} className="block px-4 py-2 font-ui text-sm text-obsidian-grey hover:bg-obsidian-grey/5 hover:text-aksum-black">
+          <Link
+            href={`/${locale}/account/following`}
+            onClick={() => setOpen(false)}
+            className={item}
+          >
             Following
           </Link>
           {isStaff && (
-            <Link href="/admin" onClick={() => setOpen(false)} className="block px-4 py-2 font-ui text-sm text-lalibela-blue hover:bg-obsidian-grey/5">
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 font-ui text-sm text-lalibela-blue hover:bg-obsidian-grey/5"
+            >
               Admin Dashboard
             </Link>
           )}
           <button
             onClick={() => signOut()}
-            className="w-full text-left px-4 py-2 font-ui text-sm text-manuscript-red hover:bg-obsidian-grey/5 border-t border-obsidian-grey/10"
+            className="w-full border-t border-obsidian-grey/10 px-4 py-2 text-left font-ui text-sm text-manuscript-red hover:bg-obsidian-grey/5"
           >
             Sign Out
           </button>

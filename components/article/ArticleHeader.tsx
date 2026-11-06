@@ -1,39 +1,27 @@
-// ArticleHeader.tsx
-import { clsx } from "clsx";
+import "./article-modern.css";
+import { categoryTone } from "@/lib/categoryTone";
 
 export function ArticleHeader({
   category,
-  accentColor,
   title,
   dek,
 }: {
   category: string;
-  accentColor: string;
+  accentColor?: string; // kept so existing callers still compile
   title: string;
   dek: string;
 }) {
+  const tone = categoryTone(category);
   return (
-    <header className="max-w-content mx-auto px-6 pt-10">
-      <div className="flex items-center gap-3 mb-3">
-        <span
-          className="h-px w-8"
-          style={{ backgroundColor: `var(--color-${accentColor})` }}
-        />
-        <p
-          className="section-label font-ui text-xs font-medium uppercase tracking-widest"
-          style={{ color: `var(--color-${accentColor})` }}
-        >
-          {category}
-        </p>
-      </div>
-
-      <h1 className="font-headline-en text-[length:var(--text-headline-xl)] leading-[var(--leading-headline)] mt-2 text-aksum-black tracking-tight">
-        {title}
-      </h1>
-
-      <p className="font-body-en italic text-[length:var(--text-body)] text-obsidian-grey/80 mt-3 leading-relaxed max-w-3xl">
-        {dek}
-      </p>
+    <header className="art-col" style={{ paddingTop: 40 }}>
+      <span
+        className="art-kicker"
+        style={{ background: tone.bg, color: tone.fg }}
+      >
+        {category}
+      </span>
+      <h1 className="art-title hp-serif">{title}</h1>
+      <p className="art-dek">{dek}</p>
     </header>
   );
 }

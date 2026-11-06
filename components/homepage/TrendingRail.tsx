@@ -1,15 +1,11 @@
+import "./home.css";
 import Link from "next/link";
-import Image from "next/image";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHead } from "./SectionHead";
 import type { TrendingItem } from "@/content/cms/fetchers/getTrending";
 
 const iconMap = { up: TrendingUp, down: TrendingDown, flat: Minus };
-const colorMap = {
-  up: "text-lalibela-blue",
-  down: "text-manuscript-red",
-  flat: "text-obsidian-grey/40",
-};
+const colorMap = { up: "#16a34a", down: "#dc2626", flat: "var(--hp-mut)" };
 
 export function TrendingRail({
   items,
@@ -19,35 +15,31 @@ export function TrendingRail({
   locale: string;
 }) {
   return (
-    <aside className="lg:sticky lg:top-6 h-fit">
-      <SectionHeader label="Trending" />
-      <ol className="divide-y divide-hairline">
+    <aside className="hp-sec hp-trend">
+      <SectionHead kicker="Most read" title="Trending" />
+      <ol style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {items.map(({ article, direction }, i) => {
           const Icon = iconMap[direction];
+          const title =
+            locale === "am" && article.title_am
+              ? article.title_am
+              : article.title_en;
           return (
-            <li key={article.slug}>
+            <li key={article.slug} className={i < 3 ? "hp-top3" : undefined}>
               <Link
                 href={`/${locale}/article/${article.slug}`}
-                className="group flex items-center gap-3 py-3 -mx-2 px-2 rounded-sm transition-colors duration-200 hover:bg-obsidian-grey/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksum-gold"
+                className="hp-row"
+                style={{ alignItems: "flex-start" }}
               >
-                <span className="font-ui text-[length:var(--text-label)] text-obsidian-grey/35 tabular-nums flex-shrink-0 w-4">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="relative w-14 h-14 flex-shrink-0 overflow-hidden bg-obsidian-grey/10">
-                  <Image
-                    src={article.heroImageUrl}
-                    alt={article.title_en}
-                    fill
-                    sizes="56px"
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                  />
-                </div>
-                <span className="font-body-en text-[length:var(--text-meta)] leading-snug flex-1 transition-colors duration-200 group-hover:text-manuscript-red">
-                  {article.title_en}
-                </span>
+                <span className="hp-num">{i + 1}</span>
+                <h3 style={{ flex: 1, fontSize: 14.5 }}>{title}</h3>
                 <Icon
-                  size={12}
-                  className={`flex-shrink-0 self-start mt-1 ${colorMap[direction]}`}
+                  size={13}
+                  style={{
+                    flex: "none",
+                    marginTop: 3,
+                    color: colorMap[direction],
+                  }}
                 />
               </Link>
             </li>

@@ -2,69 +2,61 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, AlertCircle, Check, Loader2 } from "lucide-react";
+import { UploadCloud, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
-export function MediaUploader() {
+export function MediaUploader({
+  onUploadSuccess,
+}: {
+  onUploadSuccess?: () => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [fileName, setFileName] = useState("");
 
-  async function uploadFile(file: File) {
+  const uploadFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      setError("Only image files are accepted.");
+      setError("Only images allowed.");
       return;
     }
-
     setUploading(true);
     setError("");
     setSuccess(false);
-    setFileName(file.name);
 
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/admin/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
 
-    if (!res.ok) {
-      setError(data.error ?? "Upload failed");
-      setSuccess(false);
-    } else {
       setSuccess(true);
       router.refresh();
-      setTimeout(() => {
-        setSuccess(false);
-        setFileName("");
-      }, 2000);
+      if (onUploadSuccess) onUploadSuccess();
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
+  };
 
-    setUploading(false);
-    if (inputRef.current) inputRef.current.value = "";
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) uploadFile(file);
-  }
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(true);
   }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const onDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
   }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
@@ -73,64 +65,60 @@ export function MediaUploader() {
 
   return (
     <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onClick={() => inputRef.current?.click()}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onClick={() => !uploading && inputRef.current?.click()}
       className={`
-        relative border-2 border-dashed rounded-sm p-6 text-center cursor-pointer
-        transition-all duration-150
-        ${
-          dragOver
-            ? "border-[#c9a227] bg-[#faf6e8]"
-            : success
-              ? "border-[#4a7c6b] bg-[#eef5f2]"
-              : error
-                ? "border-[#9b4a4a] bg-[#faf5f5]"
-                : "border-[#d4d2cd] bg-[#faf9f7] hover:border-[#a5a39e] hover:bg-[#f5f4f2]"
-        }
+        relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-200 cursor-pointer
+        ${dragOver ? "border-[#c9a227] bg-[#faf6e8]" : ""}
+        ${success ? "border-[#4a7c6b] bg-[#eef5f2]" : ""}
+        ${error ? "border-[#9b4a4a] bg-[#fbeeee]" : ""}
+        ${!dragOver && !success && !error ? "border-[#d4d2cd] bg-[#faf9f7] hover:border-[#a5a39e] hover:bg-[#f5f4f2]" : ""}
+        ${uploading ? "opacity-70 pointer-events-none" : ""}
       `}
     >
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
-        onChange={handleFileChange}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) uploadFile(f);
+        }}
         disabled={uploading}
         className="hidden"
       />
 
-      <div className="flex flex-col items-center gap-2">
-        {uploading ? (
-          <Loader2 size={20} className="text-[#8b8f99] animate-spin" />
-        ) : success ? (
-          <Check size={20} className="text-[#4a7c6b]" />
-        ) : (
-          <Upload
-            size={20}
-            className={dragOver ? "text-[#c9a227]" : "text-[#b8b5b0]"}
-          />
-        )}
+      {uploading ? (
+        <Loader2 size={24} className="animate-spin text-[#c9a227]" />
+      ) : success ? (
+        <CheckCircle2 size={24} className="text-[#4a7c6b]" />
+      ) : (
+        <UploadCloud
+          size={24}
+          className={dragOver ? "text-[#c9a227]" : "text-[#8b8f99]"}
+        />
+      )}
 
-        <p className="font-ui text-sm text-[#6b6f7a]">
+      <div>
+        <p className="font-ui text-sm font-medium text-[#1a1c23]">
           {uploading
-            ? `Uploading ${fileName}...`
+            ? "Uploading..."
             : success
-              ? `${fileName} uploaded`
+              ? "Upload complete!"
               : dragOver
-                ? "Drop image here"
-                : "Click or drag image to upload"}
+                ? "Drop file here"
+                : "Click to upload"}
         </p>
-        <p className="font-ui text-[11px] text-[#a5a39e]">
-          Supports JPG, PNG, WebP up to 10MB
+        <p className="font-ui text-[11px] text-[#8b8f99] mt-0.5">
+          JPG, PNG, WebP max 10MB
         </p>
       </div>
-
       {error && (
-        <div className="flex items-center justify-center gap-1.5 mt-3 font-ui text-xs text-[#9b4a4a]">
-          <AlertCircle size={12} />
-          <span>{error}</span>
-        </div>
+        <p className="font-ui text-[11px] text-[#9b4a4a] mt-1 flex items-center gap-1">
+          <AlertCircle size={12} /> {error}
+        </p>
       )}
     </div>
   );

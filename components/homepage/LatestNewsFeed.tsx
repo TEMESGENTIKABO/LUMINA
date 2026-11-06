@@ -1,12 +1,14 @@
+import "./home.css";
 import Link from "next/link";
 import Image from "next/image";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHead } from "./SectionHead";
 import type { Article } from "@/content/types/Article";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "Africa/Addis_Ababa",
   });
 }
 
@@ -19,38 +21,24 @@ function NewsItem({
   isLatest: boolean;
   locale: string;
 }) {
+  const title =
+    locale === "am" && article.title_am ? article.title_am : article.title_en;
   return (
-    <li>
-      <Link
-        href={`/${locale}/article/${article.slug}`}
-        className="group flex items-center gap-4 py-3.5 -mx-3 px-3 rounded-sm transition-colors duration-200 hover:bg-obsidian-grey/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksum-gold"
-      >
-        <div className="relative w-25 h-25 flex-shrink-0 overflow-hidden bg-obsidian-grey/10">
-          <Image
-            src={article.heroImageUrl}
-            alt={article.title_en}
-            fill
-            sizes="80px"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-          />
-          {isLatest && (
-            <span className="absolute top-1 left-1 flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-manuscript-red opacity-75 motion-safe:animate-ping" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-manuscript-red" />
-            </span>
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h3 className="font-body-en text-[length:var(--text-body)] leading-snug transition-colors duration-200 group-hover:text-manuscript-red">
-            {article.title_en}
-          </h3>
-          <span className="font-ui text-[length:var(--text-label)] text-obsidian-grey/50 tabular-nums mt-1 inline-block">
+    <Link href={`/${locale}/article/${article.slug}`} className="hp-row">
+      <div className="hp-im">
+        <Image src={article.heroImageUrl} alt={title} fill sizes="92px" />
+        {isLatest && <i className="hp-dot" />}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <h3>{title}</h3>
+        <div className="hp-meta">
+          <span>{article.subcategory ?? article.category}</span>
+          <time dateTime={article.publishedAt}>
             {formatTime(article.publishedAt)}
-          </span>
+          </time>
         </div>
-      </Link>
-    </li>
+      </div>
+    </Link>
   );
 }
 
@@ -67,43 +55,36 @@ export function LatestNewsFeed({
 }) {
   const visible = articles.slice(0, limit);
   const mid = Math.ceil(visible.length / 2);
-  const columnOne = visible.slice(0, mid);
-  const columnTwo = visible.slice(mid);
 
   return (
-    <section className="max-w-page mx-auto px-6 py-8 hairline-t">
-      <div className="flex items-center justify-between">
-        <SectionHeader label="Latest News" />
-        {articles.length > limit && (
-          <Link
-            href={`/${locale}${viewAllHref}`}
-            className="font-ui text-xs text-obsidian-grey/60 hover:text-manuscript-red transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aksum-gold rounded-sm whitespace-nowrap"
-          >
-            view all
-          </Link>
-        )}
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x divide-hairline">
-        <ul className="divide-y divide-hairline sm:pr-8">
-          {columnOne.map((article, i) => (
+    <section className="hp-sec">
+      <SectionHead
+        kicker="Keep up"
+        title="More Headlines"
+        href={articles.length > limit ? viewAllHref : undefined}
+        locale={locale}
+      />
+      <div className="hp-two">
+        <div>
+          {visible.slice(0, mid).map((a, i) => (
             <NewsItem
-              key={article.slug}
-              article={article}
+              key={a.slug}
+              article={a}
               isLatest={i === 0}
               locale={locale}
             />
           ))}
-        </ul>
-        <ul className="divide-y divide-hairline sm:pl-8">
-          {columnTwo.map((article) => (
+        </div>
+        <div>
+          {visible.slice(mid).map((a) => (
             <NewsItem
-              key={article.slug}
-              article={article}
+              key={a.slug}
+              article={a}
               isLatest={false}
               locale={locale}
             />
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   );

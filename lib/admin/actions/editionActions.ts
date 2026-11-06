@@ -264,3 +264,11 @@ export async function reorderEditionArticles(
   revalidatePath(`/admin/editions/${editionId}`);
   return { success: true };
 }
+
+export async function bulkDeleteEditions(ids: string[]) {
+  const session = await auth();
+  if (!session?.user) return { error: "Not authorized" };
+  await prisma.digitalEdition.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/editions");
+  return { success: true, count: ids.length };
+}

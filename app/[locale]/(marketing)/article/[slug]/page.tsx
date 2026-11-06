@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug } from "@/content/cms/fetchers/getArticleBySlug";
 import { getRelatedArticles } from "@/content/cms/fetchers/getRelatedArticles";
 import { ReadingProgressBar } from "@/components/article/ReadingProgressBar";
+import { ReadingInit } from "@/components/article/ReadingMode";
+import { ShareBar } from "@/components/article/ShareBar";
 import { ArticleHeader } from "@/components/article/ArticleHeader";
 import { ArticleMeta } from "@/components/article/ArticleMeta";
 import { HeroImage } from "@/components/article/HeroImage";
-import { ShareRail } from "@/components/article/ShareRail";
 import { headers } from "next/headers";
 import { PaywallGate } from "@/components/article/PaywallGate";
 import { RelatedStoriesEnd } from "@/components/article/RelatedStoriesEnd";
@@ -16,7 +17,10 @@ import { buildArticleMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { ViewTracker } from "@/components/article/ViewTracker";
 import { buildArticleJsonLd } from "@/lib/structuredData";
-import { tiptapDocToPlainText } from "@/lib/tiptapDoc"; // Added import
+import { tiptapDocToPlainText } from "@/lib/tiptapDoc";
+import { getMostReadNow } from "@/content/cms/fetchers/getMostReadNow";
+import { MostReadNowWidget } from "@/components/article/MostReadNowWidget";
+import "@/components/article/article-modern.css";
 
 export async function generateMetadata({
   params,
@@ -49,6 +53,7 @@ export default async function ArticlePage({
     article.slug,
   );
   const related = await getRelatedArticles(article.slug, article.category);
+  const mostReadNow = await getMostReadNow(article.slug);
   const url = `https://aksum.example.com/${locale}/article/${article.slug}`;
 
   // Generate body text for ArticleMeta
@@ -61,8 +66,9 @@ export default async function ArticlePage({
   return (
     <>
       <ReadingProgressBar />
+      <ReadingInit />
       <ViewTracker articleSlug={article.slug} />
-      <ShareRail
+      <ShareBar
         url={url}
         title={article.title_en}
         articleSlug={article.slug}
@@ -74,7 +80,7 @@ export default async function ArticlePage({
           __html: JSON.stringify(buildArticleJsonLd(article)),
         }}
       />
-      <article>
+      <article className="reading-surface">
         <ArticleHeader
           category={article.subcategory ?? article.category}
           accentColor={article.accentColor}
@@ -86,10 +92,11 @@ export default async function ArticlePage({
           authorSlug={article.author.slug}
           locale={locale}
           articleSlug={article.slug}
+          title={article.title_en}
           publishedAt={article.publishedAt}
           updatedAt={article.updatedAt}
           readTimeMinutes={article.readTimeMinutes}
-          bodyText={bodyText} // Added prop
+          bodyText={bodyText}
         />
         <HeroImage
           src={article.heroImageUrl}
@@ -103,12 +110,7 @@ export default async function ArticlePage({
         ) : locale === "am" ? (
           <div className="max-w-content mx-auto px-6 mt-8">
             <p className="font-ui text-sm text-obsidian-grey border border-hairline p-4">
-              \u12ED\u1205 \u12A5\u1275\u12E8 \u1260\u12A0\u121B\u122D\u129B
-              \u1268\u122D\u120D\u12CB
-              \u12A0\u120B\u1240\u1228\u1260\u121D\u1362
-              \u12E8\u12A5\u1295\u130D\u120A\u12DD\u129B\u12CD\u1295
-              \u1245\u1305 \u1260\u1273\u127E
-              \u12A5\u12EB\u1295\u1263\u1261\u1362
+              ይህ እትየ በአማርኛ ኔርልዋ አላቀረበም። የእንግሊዝኛውን ቅጅ በታች እያንቃቁ።
               <br />
               <span className="text-xs text-obsidian-grey/60">
                 This article is not yet available in Amharic. Showing the
@@ -130,7 +132,11 @@ export default async function ArticlePage({
           initialHasMore={hasMore}
         />
       </article>
-
+      {mostReadNow.length > 0 && (
+        <div className="max-w-content mx-auto px-6 mt-8">
+          <MostReadNowWidget articles={mostReadNow} locale={locale} />
+        </div>
+      )}
       <RelatedStoriesEnd articles={related} locale={locale} />
     </>
   );

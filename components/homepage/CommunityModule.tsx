@@ -1,5 +1,6 @@
+import "./home.css";
 import Link from "next/link";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHead } from "./SectionHead";
 import type { Article } from "@/content/types/Article";
 
 interface UpcomingEvent {
@@ -7,10 +8,6 @@ interface UpcomingEvent {
   title: string;
   location: string;
   startsAt: Date | string;
-}
-
-function formatEventDate(d: Date | string) {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export function CommunityModule({
@@ -23,48 +20,70 @@ export function CommunityModule({
   locale: string;
 }) {
   return (
-    <section className="max-w-page mx-auto px-6 py-6">
-      <SectionHeader label="Community" />
-      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-hairline">
-        <div className="md:pr-8">
-          <p className="section-label text-obsidian-grey/60 mb-3">Most Discussed</p>
-          {discussed.length === 0 ? (
-            <p className="font-ui text-sm text-obsidian-grey">No discussion yet.</p>
-          ) : (
-            <ul className="divide-y divide-hairline">
-              {discussed.map(({ article, commentCount }) => (
-                <li key={article.slug} className="flex items-center justify-between gap-4 py-2.5">
-                  <Link href={`/${locale}/article/${article.slug}`} className="font-body-en text-[length:var(--text-body)] hover:text-manuscript-red transition-colors">
-                    {article.title_en}
-                  </Link>
-                  <span className="font-ui text-[length:var(--text-label)] text-obsidian-grey/50 flex-shrink-0 tabular-nums">
-                    {commentCount}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="md:pl-8 pt-6 md:pt-0">
-          <p className="section-label text-obsidian-grey/60 mb-3">Upcoming Events</p>
-          {events.length === 0 ? (
-            <p className="font-ui text-sm text-obsidian-grey">No events scheduled yet.</p>
-          ) : (
-            <ul className="divide-y divide-hairline">
-              {events.slice(0, 4).map((event) => (
-                <li key={event.slug} className="py-2.5">
-                  <Link href={`/${locale}/events/${event.slug}`} className="group flex items-baseline gap-3">
-                    <span className="font-ui text-[length:var(--text-label)] text-obsidian-grey/50 tabular-nums flex-shrink-0">
-                      {formatEventDate(event.startsAt)}
+    <section className="hp-sec">
+      <div className="hp-w">
+        <SectionHead kicker="Join in" title="Community" />
+        <div className="hp-pair">
+          <div className="hp-panel">
+            <p className="hp-sub">Most Discussed</p>
+            {discussed.length === 0 ? (
+              <p
+                className="hp-r"
+                style={{ color: "var(--hp-mut)", fontSize: 14 }}
+              >
+                No discussion yet.
+              </p>
+            ) : (
+              discussed.map(({ article, commentCount }) => (
+                <Link
+                  key={article.slug}
+                  href={`/${locale}/article/${article.slug}`}
+                  className="hp-r"
+                >
+                  <h3 style={{ flex: 1 }}>
+                    {locale === "am" && article.title_am
+                      ? article.title_am
+                      : article.title_en}
+                  </h3>
+                  <span className="hp-cnt">{commentCount}</span>
+                </Link>
+              ))
+            )}
+          </div>
+
+          <div className="hp-panel">
+            <p className="hp-sub">Upcoming Events</p>
+            {events.length === 0 ? (
+              <p
+                className="hp-r"
+                style={{ color: "var(--hp-mut)", fontSize: 14 }}
+              >
+                No events scheduled yet.
+              </p>
+            ) : (
+              events.slice(0, 4).map((event) => {
+                const d = new Date(event.startsAt);
+                return (
+                  <Link
+                    key={event.slug}
+                    href={`/${locale}/events/${event.slug}`}
+                    className="hp-r"
+                  >
+                    <span className="hp-date">
+                      {d.toLocaleDateString("en-US", { month: "short" })}
+                      <b>{d.getDate()}</b>
                     </span>
-                    <span className="font-body-en text-[length:var(--text-body)] group-hover:text-manuscript-red transition-colors">
-                      {event.title}
-                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <h3>{event.title}</h3>
+                      {event.location && (
+                        <div className="hp-loc">{event.location}</div>
+                      )}
+                    </div>
                   </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </section>

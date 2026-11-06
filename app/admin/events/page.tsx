@@ -1,4 +1,3 @@
-
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { EventForm } from "./EventForm";
@@ -29,16 +28,15 @@ export default async function EventsAdminPage() {
         headers={["Title", "Location", "Starts", "Status", ""]}
         itemLabel="events"
         onBulkDelete={bulkDeleteEvents}
-        renderRow={(event, checkbox) => (
-          <tr key={event.id}>
-            <td className="px-4 py-3">{checkbox}</td>
+        rows={events.map((event) => (
+          <>
             <td className="px-4 py-3 font-ui text-sm"><Link href={`/admin/events/${event.id}`} className="hover:text-manuscript-red">{event.title}</Link></td>
             <td className="px-4 py-3 font-ui text-sm text-obsidian-grey">{event.location}</td>
             <td className="px-4 py-3 font-ui text-sm text-obsidian-grey">{formatDate(event.startsAt)}</td>
             <td className="px-4 py-3 font-ui text-xs uppercase">{event.published ? <span className="text-manuscript-red">Published</span> : <span className="text-obsidian-grey">Draft</span>}</td>
             <td className="px-4 py-3 text-right"><EventDeleteButton id={event.id} name={event.title} /></td>
-          </tr>
-        )}
+          </>
+        ))}
       />
     </div>
   );

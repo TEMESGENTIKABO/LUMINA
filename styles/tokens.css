@@ -58,5 +58,13 @@
 .dark {
   --token-aksum-black: #f8f5ef;
   --token-parchment-white: #12100d;
+  --token-obsidian-grey: #cfc8ba;
+  --hairline: rgba(248, 245, 239, 0.14);
+  --hairline-strong: rgba(248, 245, 239, 0.3);
 }
 
+:root {
+  --color-aksum-black-rgb: 26 26 26;   /* matches token value */
+  --color-aksum-gold-rgb: 199 154 69;  /* #c79a45 */
+  --color-obsidian-grey-rgb: 107 107 107;
+}

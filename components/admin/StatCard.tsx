@@ -4,75 +4,48 @@ interface StatCardProps {
   label: string;
   value: number | string;
   icon?: LucideIcon;
-  trend?: {
-    direction: "up" | "down" | "flat";
-    value: string;
-    label?: string;
-  };
+  trend?: { direction: "up" | "down" | "flat"; value: string; label?: string };
   accent?: "default" | "gold" | "blue" | "red";
 }
 
 const accentMap = {
-  default: "border-[#e5e3df]",
-  gold: "border-l-[3px] border-l-[#c9a227] border-t border-r border-b border-[#e5e3df]",
-  blue: "border-l-[3px] border-l-[#4a7c9b] border-t border-r border-b border-[#e5e3df]",
-  red: "border-l-[3px] border-l-[#9b4a4a] border-t border-r border-b border-[#e5e3df]",
+  default: { icon: "bg-[#f5f4f2] text-[#6b6f7a]", glow: "from-[#8b8f99]/10" },
+  gold: { icon: "bg-[#faf6e8] text-[#b08d1a]", glow: "from-[#c9a227]/15" },
+  blue: { icon: "bg-[#eef4f8] text-[#4a7c9b]", glow: "from-[#4a7c9b]/15" },
+  red: { icon: "bg-[#fbeeee] text-[#9b4a4a]", glow: "from-[#9b4a4a]/12" },
 };
 
-export function StatCard({
-  label,
-  value,
-  icon: Icon,
-  trend,
-  accent = "default",
-}: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, trend, accent = "default" }: StatCardProps) {
+  const a = accentMap[accent];
+  const trendColor =
+    trend?.direction === "up" ? "text-[#4a7c6b] bg-[#eef5f2]"
+    : trend?.direction === "down" ? "text-[#9b4a4a] bg-[#fbeeee]"
+    : "text-[#6b6f7a] bg-[#f5f4f2]";
+
   return (
-    <div className={`bg-white p-5 ${accentMap[accent]}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="font-ui text-[11px] font-medium uppercase tracking-wider text-[#8b8f99]">
-            {label}
-          </p>
-          <p className="font-headline-en text-2xl mt-2 text-[#1a1c23] tracking-tight">
-            {value}
-          </p>
+    <div className="relative overflow-hidden bg-white rounded-2xl border border-[#e5e3df] p-5 shadow-[0_1px_2px_rgba(26,28,35,0.04)] hover:shadow-[0_8px_24px_-8px_rgba(26,28,35,0.12)] hover:-translate-y-0.5 transition-all duration-200">
+      <div className={`pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br ${a.glow} to-transparent blur-2xl`} />
+      <div className="relative flex items-start justify-between">
+        <div className="min-w-0">
+          <p className="font-ui text-xs font-medium text-[#6b6f7a]">{label}</p>
+          <p className="font-headline-en text-3xl mt-2 text-[#1a1c23] tracking-tight tabular-nums">{value}</p>
         </div>
         {Icon && (
-          <div className="w-8 h-8 flex items-center justify-center bg-[#faf9f7] border border-[#e5e3df] flex-shrink-0 ml-3">
-            <Icon size={15} className="text-[#8b8f99]" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ml-3 ${a.icon}`}>
+            <Icon size={18} />
           </div>
         )}
       </div>
 
       {trend && (
-        <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-[#f0eeea]">
-          <TrendIndicator direction={trend.direction} />
-          <span
-            className={`font-ui text-xs font-medium tabular-nums ${
-              trend.direction === "up"
-                ? "text-[#4a7c6b]"
-                : trend.direction === "down"
-                  ? "text-[#9b4a4a]"
-                  : "text-[#8b8f99]"
-            }`}
-          >
+        <div className="relative flex items-center gap-2 mt-4">
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-ui text-xs font-medium tabular-nums ${trendColor}`}>
+            {trend.direction === "up" ? <TrendingUp size={12} /> : trend.direction === "down" ? <TrendingDown size={12} /> : <Minus size={12} />}
             {trend.value}
           </span>
-          {trend.label && (
-            <span className="font-ui text-[11px] text-[#a5a39e]">
-              {trend.label}
-            </span>
-          )}
+          {trend.label && <span className="font-ui text-[11px] text-[#a5a39e]">{trend.label}</span>}
         </div>
       )}
     </div>
   );
-}
-
-function TrendIndicator({ direction }: { direction: "up" | "down" | "flat" }) {
-  if (direction === "up")
-    return <TrendingUp size={13} className="text-[#4a7c6b]" />;
-  if (direction === "down")
-    return <TrendingDown size={13} className="text-[#9b4a4a]" />;
-  return <Minus size={13} className="text-[#8b8f99]" />;
 }

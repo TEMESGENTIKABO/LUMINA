@@ -1,0 +1,11 @@
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--hp-accent, #c79a45); outline-offset: 3px; border-radius: 4px; }
+::selection { background: var(--hp-accent, #f6c453); color: var(--hp-accentfg, #1a1405); }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* Amharic: serif headlines, no letter-spacing or capitals (they don't apply to Ge'ez) */
+:lang(am) :is(.hp-serif, .hd-serif, .hh-title, .lc h3, .art-title, .hp-title) { font-family: var(--font-serif-am), "Noto Serif Ethiopic", serif; letter-spacing: 0; font-weight: 700; }
+:lang(am) :is(.hp-lab, .section-label, .hh-pill, .lc-chip, .hp-chip, .art-kicker, .ic-body b) { letter-spacing: 0; text-transform: none; }

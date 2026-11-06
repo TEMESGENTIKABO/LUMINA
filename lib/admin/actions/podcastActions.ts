@@ -313,3 +313,12 @@ export async function getEpisode(id: string) {
   if (!episode) return { error: "Episode not found" };
   return { episode };
 }
+
+export async function bulkDeleteEpisodes(ids: string[]) {
+  const session = await auth();
+  if (!session?.user) return { error: "Not authorized" };
+  await prisma.podcastEpisode.deleteMany({ where: { id: { in: ids } } });
+  revalidatePath("/admin/podcast");
+  revalidatePath("/en/podcast");
+  return { success: true, count: ids.length };
+}

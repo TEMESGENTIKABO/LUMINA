@@ -1,6 +1,8 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getBreakingArticles } from "@/content/cms/fetchers/getBreakingArticles";
+import { getActiveTheme } from "@/content/cms/fetchers/getActiveTheme";
+import { ReadingListDrawer } from "@/components/article/ReadingListDrawer";
 
 export default async function MarketingLayout({
   children,
@@ -10,12 +12,18 @@ export default async function MarketingLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const breakingItems = await getBreakingArticles();
+  const [breakingItems, theme] = await Promise.all([
+    getBreakingArticles(),
+    getActiveTheme(),
+  ]);
 
   return (
     <>
-      <Header locale={locale} breakingItems={breakingItems} />
-      <main id="main-content" className="min-h-screen">{children}</main>
+      <Header locale={locale} breakingItems={breakingItems} theme={theme} />
+      <main id="main-content" className="min-h-screen">
+        {children}
+      </main>
+      <ReadingListDrawer locale={locale} />
       <Footer locale={locale} />
     </>
   );

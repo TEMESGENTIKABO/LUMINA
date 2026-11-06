@@ -421,3 +421,46 @@ export async function bulkDeleteArticles(articleIds: string[]) {
   revalidatePath("/admin/articles");
   return { success: true, count: articleIds.length };
 }
+
+export async function quickUpdateStatus(articleId: string, newStatus: string) {
+  const session = await auth();
+  if (!session?.user) return { error: "Not authorized" };
+
+  const article = await prisma.article.findUnique({ where: { id: articleId } });
+  if (!article) return { error: "Article not found" };
+
+  const isOwner = article.authorId === session.user.id;
+  if (!isOwner && !canManageAllArticles(session.user.role)) {
+    return { error: "You can only move your own articles" };
+  }
+
+  const allowedStatuses = getAllowedStatuses(session.user.role);
+  if (!allowedStatuses.includes(newStatus)) {
+    return { error: `Your role can only set status to: ${allowedStatuses.join(", ")}` };
+  }
+
+  const wasPublished = article.status === "PUBLISHED";
+  const isNowPublished = newStatus === "PUBLISHED";
+
+  await prisma.article.update({
+    where: { id: articleId },
+    data: {
+      status: newStatus as any,
+      publishedAt: !wasPublished && isNowPublished ? new Date() : article.publishedAt,
+    },
+  });
+
+  await logAdminAction({
+    actorId: session.user.id,
+    actionType: isNowPublished && !wasPublished ? "PUBLISHED" : "UPDATED",
+    contentType: "Article",
+    contentId: articleId,
+    contentLabel: article.title_en,
+  });
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/admin/kanban");
+  revalidatePath("/en");
+  revalidatePath("/am");
+  return { success: true };
+}

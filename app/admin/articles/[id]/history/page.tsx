@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { RestoreRevisionButton } from "./RestoreRevisionButton";
+import { RevisionDiff } from "./RevisionDiff";
 
 function formatDate(d: Date) {
   return new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
@@ -31,12 +32,14 @@ export default async function ArticleHistoryPage({
           Back to editor
         </Link>
       </div>
-      <p className="font-ui text-sm text-obsidian-grey mb-6">{article.title_en}</p>
+      <p className="font-ui text-sm text-obsidian-grey mb-2">{article.title_en}</p>
+
+      <RevisionDiff revisions={revisions} />
 
       {revisions.length === 0 ? (
-        <p className="font-ui text-sm text-obsidian-grey">No revisions recorded yet.</p>
+        <p className="font-ui text-sm text-obsidian-grey mt-6">No revisions recorded yet.</p>
       ) : (
-        <div className="divide-y divide-hairline">
+        <div className="divide-y divide-hairline mt-6">
           {revisions.map((rev, i) => (
             <div key={rev.id} className="py-4 flex items-start justify-between gap-4">
               <div className="flex-1">

@@ -1,17 +1,30 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getDashboardStats() {
-  const [totalArticles, publishedArticles, draftArticles, scheduledArticles, totalUsers, totalMedia] =
-    await Promise.all([
-      prisma.article.count(),
-      prisma.article.count({ where: { status: "PUBLISHED" } }),
-      prisma.article.count({ where: { status: "DRAFT" } }),
-      prisma.article.count({ where: { status: "SCHEDULED" } }),
-      prisma.user.count(),
-      prisma.media.count(),
-    ]);
+  const [
+    totalArticles,
+    publishedArticles,
+    draftArticles,
+    scheduledArticles,
+    totalUsers,
+    totalMedia,
+  ] = await Promise.all([
+    prisma.article.count(),
+    prisma.article.count({ where: { status: "PUBLISHED" } }),
+    prisma.article.count({ where: { status: "DRAFT" } }),
+    prisma.article.count({ where: { status: "SCHEDULED" } }),
+    prisma.user.count(),
+    prisma.media.count(),
+  ]);
 
-  return { totalArticles, publishedArticles, draftArticles, scheduledArticles, totalUsers, totalMedia };
+  return {
+    totalArticles,
+    publishedArticles,
+    draftArticles,
+    scheduledArticles,
+    totalUsers,
+    totalMedia,
+  };
 }
 
 export async function getRecentActivity() {
@@ -33,7 +46,7 @@ export async function getNeedsAttention() {
     prisma.comment.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { user: true },
+      include: { user: true }, // Just get the user. Do not include 'article'.
     }),
   ]);
 

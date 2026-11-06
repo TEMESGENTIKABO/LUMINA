@@ -61,9 +61,10 @@ export async function GET(request: NextRequest) {
 
   let sentCount = 0;
   for (const sub of subscribers) {
+    // Updated footer with both Manage preferences and Unsubscribe links
     const personalizedHtml = html.replace(
       "</div>",
-      `<p style="font-size: 11px; color: #aaa;"><a href="${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color: #aaa;">Unsubscribe</a></p></div>`,
+      `<p style="font-size: 11px; color: #aaa;"><a href="${SITE_URL}/en/newsletters/manage?email=${encodeURIComponent(sub.email)}" style="color: #aaa;">Manage preferences</a> - <a href="${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(sub.email)}" style="color: #aaa;">Unsubscribe</a></p></div>`,
     );
     try {
       await resend.emails.send({

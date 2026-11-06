@@ -3,24 +3,41 @@ import { prisma } from "@/lib/prisma";
 import { cached } from "@/lib/dataCache";
 
 export async function GET(request: NextRequest) {
-  const categorySlug = request.nextUrl.searchParams.get("category");
-  if (!categorySlug) return NextResponse.json({ error: "category required" }, { status: 400 });
+  const param = request.nextUrl.searchParams.get("category");
+  if (!param)
+    return NextResponse.json({ error: "category required" }, { status: 400 });
+  const parts = param.split("/").filter(Boolean);
 
-  const data = await cached(`nav-preview:${categorySlug}`, 300, async () => {
-    const category = await prisma.category.findUnique({ where: { slug: categorySlug } });
-    if (!category) return null;
+  const articles = await cached(`nav-preview:v3:${param}`, 300, async () => {
+    // Most specific slug first ("news/ethiopia" → "ethiopia"), then the parent ("news").
+    let category = null;
+    for (const slug of [parts[parts.length - 1], parts[0]]) {
+      category = await prisma.category.findUnique({ where: { slug } });
+      if (category) break;
+    }
+    if (!category) return [];
 
-    const article = await prisma.article.findFirst({
+    return prisma.article.findMany({
       where: {
         status: "PUBLISHED",
-        OR: [{ categoryId: category.id }, { category: { parentId: category.id } }],
+        OR: [
+          { categoryId: category.id },
+          { category: { parentId: category.id } },
+        ],
       },
       orderBy: { publishedAt: "desc" },
-      select: { slug: true, title_en: true, heroImageUrl: true },
+      take: 3,
+      select: {
+        slug: true,
+        title_en: true,
+        title_am: true,
+        dek_en: true,
+        dek_am: true,
+        heroImageUrl: true,
+        category: { select: { name_en: true, name_am: true } },
+      },
     });
-
-    return article;
   });
 
-  return NextResponse.json({ article: data });
+  return NextResponse.json({ articles });
 }

@@ -1,5 +1,6 @@
+import "./home.css";
 import { EpisodeCard } from "@/components/podcast/EpisodeCard";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHead } from "./SectionHead";
 import type { PodcastEpisode } from "@/content/types/PodcastEpisode";
 
 export function PodcastCarousel({
@@ -12,12 +13,21 @@ export function PodcastCarousel({
   if (episodes.length === 0) return null;
 
   return (
-    <section className="max-w-page mx-auto px-6 py-8 hairline-t">
-      <SectionHeader label="Podcasts" href="/podcast" locale={locale} />
-      <div className="max-w-content divide-y divide-hairline">
-        {episodes.map((episode) => (
-          <EpisodeCard key={episode.slug} episode={episode} locale={locale} />
-        ))}
+    <section className="hp-sec">
+      <div className="hp-w">
+        <SectionHead
+          kicker="Listen"
+          title="Podcasts"
+          href="/podcast"
+          locale={locale}
+        />
+        <div className="hp-panel" style={{ maxWidth: 860 }}>
+          {episodes.map((episode) => (
+            <div key={episode.slug} className="hp-ep">
+              <EpisodeCard episode={episode} locale={locale} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

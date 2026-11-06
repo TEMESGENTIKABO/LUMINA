@@ -43,7 +43,7 @@ export function DarkModeToggle() {
   if (!mounted) return <span className="w-4 h-4 inline-block" aria-hidden="true" />;
 
   return (
-    <button onClick={toggle} aria-label="Toggle dark mode" className="text-obsidian-grey hover:text-aksum-black">
+    <button onClick={toggle} aria-label="Toggle dark mode" className="text-obsidian-grey/70 transition-colors hover:text-aksum-black">
       {dark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   );

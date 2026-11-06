@@ -59,8 +59,8 @@ export function UserRoleSelect({
           onChange={(e) => handleChange(e.target.value)}
           disabled={isPending}
           className={`
-            w-full appearance-none border border-[#e5e3df] bg-white pl-3 pr-8 py-2 font-ui text-sm text-[#1a1c23]
-            focus:outline-none focus:border-[#8b8f99] focus:ring-1 focus:ring-[#8b8f99]/20
+            w-full appearance-none rounded-xl border border-[#e5e3df] bg-white pl-3.5 pr-9 py-2 font-ui text-sm text-[#1a1c23] hover:border-[#d4d2cd]
+            focus:outline-none focus:border-[#c9a227]/60 focus:ring-4 focus:ring-[#c9a227]/10
             disabled:opacity-50 disabled:cursor-not-allowed transition-all
             ${error ? "border-[#9b4a4a] bg-[#faf5f5]" : ""}
           `}

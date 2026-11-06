@@ -17,7 +17,7 @@ export async function getTopicBySlug(slug: string) {
   const published = links
     .map((l) => l.article)
     .filter((a) => a.status === "PUBLISHED")
-    .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
+    .sort((a, b) => (a.publishedAt?.getTime() ?? 0) - (b.publishedAt?.getTime() ?? 0)); // oldest first, for a real timeline
 
   return { topic, articles: published.map(mapDbArticleToArticle) };
 }

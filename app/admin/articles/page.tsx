@@ -1,10 +1,11 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageAllArticles } from "@/lib/admin/permissions";
 import { ArticlesFilterBar } from "./ArticlesFilterBar";
 import { ArticlesTable } from "./ArticlesTable";
-
+import { SavedFilterPresets } from "@/components/admin/SavedFilterPresets";
 const PAGE_SIZE = 20;
 
 export default async function ArticlesPage({
@@ -17,9 +18,11 @@ export default async function ArticlesPage({
   const canSeeAll = session?.user && canManageAllArticles(session.user.role);
   const page = Number(params.page ?? "1");
 
-  const where: any = canSeeAll ? {} : { authorId: session?.user?.id };
+  const where: Prisma.ArticleWhereInput = canSeeAll ? {} : { authorId: session?.user?.id };
   if (params.q) where.title_en = { contains: params.q, mode: "insensitive" };
-  if (params.status) where.status = params.status;
+  if (params.status && ["DRAFT", "IN_REVIEW", "PUBLISHED", "ARCHIVED"].includes(params.status)) {
+    where.status = params.status as Prisma.ArticleWhereInput["status"];
+  }
   if (params.category) where.categoryId = params.category;
   if (params.author) where.authorId = params.author;
 
@@ -55,28 +58,54 @@ export default async function ArticlesPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-headline-en text-2xl">Articles</h1>
-        <Link href="/admin/articles/new" className="bg-aksum-black text-parchment-white font-ui text-sm px-4 py-2">
+        <Link
+          href="/admin/articles/new"
+          className="bg-aksum-black text-parchment-white font-ui text-sm px-4 py-2"
+        >
           New Article
         </Link>
       </div>
-
+      <SavedFilterPresets />
       <ArticlesFilterBar
         categories={categories.map((c) => ({ id: c.id, label: c.name_en }))}
-        authors={authors.map((a) => ({ id: a.id, label: a.name ?? a.email ?? "Unknown" }))}
+        authors={authors.map((a) => ({
+          id: a.id,
+          label: a.name ?? a.email ?? "Unknown",
+        }))}
       />
 
-      <p className="font-ui text-xs text-obsidian-grey mb-3">{total} article{total !== 1 ? "s" : ""} found</p>
+      <p className="font-ui text-xs text-obsidian-grey mb-3">
+        {total} article{total !== 1 ? "s" : ""} found
+      </p>
 
       {articles.length === 0 ? (
-        <p className="font-ui text-sm text-obsidian-grey">No articles match these filters.</p>
+        <p className="font-ui text-sm text-obsidian-grey">
+          No articles match these filters.
+        </p>
       ) : (
         <>
           <ArticlesTable articles={articles} />
           {totalPages > 1 && (
             <div className="flex items-center gap-4 mt-6">
-              {page > 1 && <Link href={buildPageUrl(page - 1)} className="font-ui text-sm text-obsidian-grey hover:text-aksum-black">Previous</Link>}
-              <span className="font-ui text-xs text-obsidian-grey">Page {page} of {totalPages}</span>
-              {page < totalPages && <Link href={buildPageUrl(page + 1)} className="font-ui text-sm text-obsidian-grey hover:text-aksum-black">Next</Link>}
+              {page > 1 && (
+                <Link
+                  href={buildPageUrl(page - 1)}
+                  className="font-ui text-sm text-obsidian-grey hover:text-aksum-black"
+                >
+                  Previous
+                </Link>
+              )}
+              <span className="font-ui text-xs text-obsidian-grey">
+                Page {page} of {totalPages}
+              </span>
+              {page < totalPages && (
+                <Link
+                  href={buildPageUrl(page + 1)}
+                  className="font-ui text-sm text-obsidian-grey hover:text-aksum-black"
+                >
+                  Next
+                </Link>
+              )}
             </div>
           )}
         </>

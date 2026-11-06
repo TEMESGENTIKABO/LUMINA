@@ -80,36 +80,36 @@ export function CommandPalette() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-aksum-black/40 flex items-start justify-center pt-24" onClick={() => setOpen(false)}>
+    <div className="fixed inset-0 z-[100] bg-aksum-black/50 backdrop-blur-sm flex items-start justify-center pt-24 px-4" onClick={() => setOpen(false)}>
       <Command
-        className="w-full max-w-lg bg-parchment-white border border-obsidian-grey/20 shadow-2xl"
+        className="w-full max-w-xl bg-white rounded-2xl border border-[#e5e3df] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         shouldFilter={false}
       >
-        <div className="flex items-center gap-2 px-4 border-b border-obsidian-grey/10">
-          <Search size={16} className="text-obsidian-grey" />
+        <div className="flex items-center gap-3 px-5 border-b border-[#f0eeea]">
+          <Search size={17} className="text-[#a5a39e]" />
           <Command.Input
             value={query}
             onValueChange={handleQueryChange}
             placeholder="Search or jump to..."
             autoFocus
-            className="flex-1 font-ui text-sm py-3 bg-transparent outline-none"
+            className="flex-1 font-ui text-[15px] py-4 bg-transparent outline-none placeholder:text-[#a5a39e]"
           />
-          <kbd className="font-ui text-[10px] text-obsidian-grey/50 border border-obsidian-grey/20 px-1.5 py-0.5">ESC</kbd>
+          <kbd className="font-ui text-[10px] text-[#8b8f99] bg-[#f5f4f2] border border-[#e5e3df] rounded-md px-1.5 py-0.5">ESC</kbd>
         </div>
 
-        <Command.List className="max-h-96 overflow-y-auto p-2">
-          <Command.Empty className="font-ui text-sm text-obsidian-grey p-4 text-center">No results.</Command.Empty>
+        <Command.List className="max-h-[26rem] overflow-y-auto p-2">
+          <Command.Empty className="font-ui text-sm text-[#8b8f99] p-8 text-center">No results.</Command.Empty>
 
           {!query.trim() && (
-            <Command.Group heading="Navigate" className="font-ui text-[10px] uppercase tracking-wide text-obsidian-grey/50 px-2 py-1.5">
+            <Command.Group heading="Navigate" className="font-ui text-[10px] font-semibold uppercase tracking-wider text-[#a5a39e] px-2 py-1.5 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5">
               {NAV_COMMANDS.map((cmd) => (
                 <Command.Item
                   key={cmd.href}
                   onSelect={() => go(cmd.href)}
-                  className="flex items-center gap-3 px-2 py-2 font-ui text-sm text-aksum-black cursor-pointer data-[selected=true]:bg-obsidian-grey/5"
+                  className="flex items-center gap-3 px-3 py-2.5 font-ui text-sm text-[#1a1c23] rounded-lg cursor-pointer data-[selected=true]:bg-[#faf6e8] transition-colors"
                 >
-                  <cmd.icon size={14} className="text-obsidian-grey" />
+                  <cmd.icon size={14} className="text-[#8b8f99]" />
                   {cmd.label}
                 </Command.Item>
               ))}
@@ -117,27 +117,27 @@ export function CommandPalette() {
           )}
 
           {results && results.articles.length > 0 && (
-            <Command.Group heading="Articles" className="font-ui text-[10px] uppercase tracking-wide text-obsidian-grey/50 px-2 py-1.5 mt-2">
+            <Command.Group heading="Articles" className="font-ui text-[10px] font-semibold uppercase tracking-wider text-[#a5a39e] px-2 py-1.5 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 mt-2">
               {results.articles.map((a) => (
                 <Command.Item
                   key={a.id}
                   onSelect={() => go(`/admin/articles/${a.id}`)}
-                  className="flex items-center justify-between px-2 py-2 font-ui text-sm text-aksum-black cursor-pointer data-[selected=true]:bg-obsidian-grey/5"
+                  className="flex items-center justify-between px-3 py-2.5 font-ui text-sm text-[#1a1c23] rounded-lg cursor-pointer data-[selected=true]:bg-[#faf6e8] transition-colors"
                 >
                   <span className="truncate">{a.title_en}</span>
-                  <span className="text-xs text-obsidian-grey/50 flex-shrink-0 ml-2">{a.status}</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#8b8f99] flex-shrink-0 ml-2">{a.status}</span>
                 </Command.Item>
               ))}
             </Command.Group>
           )}
 
           {results && results.users.length > 0 && (
-            <Command.Group heading="Users" className="font-ui text-[10px] uppercase tracking-wide text-obsidian-grey/50 px-2 py-1.5 mt-2">
+            <Command.Group heading="Users" className="font-ui text-[10px] font-semibold uppercase tracking-wider text-[#a5a39e] px-2 py-1.5 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 mt-2">
               {results.users.map((u) => (
                 <Command.Item
                   key={u.id}
                   onSelect={() => go("/admin/users")}
-                  className="px-2 py-2 font-ui text-sm text-aksum-black cursor-pointer data-[selected=true]:bg-obsidian-grey/5"
+                  className="px-3 py-2.5 font-ui text-sm text-[#1a1c23] rounded-lg cursor-pointer data-[selected=true]:bg-[#faf6e8] transition-colors"
                 >
                   {u.name ?? u.email}
                 </Command.Item>
@@ -146,12 +146,12 @@ export function CommandPalette() {
           )}
 
           {results && results.media.length > 0 && (
-            <Command.Group heading="Media" className="font-ui text-[10px] uppercase tracking-wide text-obsidian-grey/50 px-2 py-1.5 mt-2">
+            <Command.Group heading="Media" className="font-ui text-[10px] font-semibold uppercase tracking-wider text-[#a5a39e] px-2 py-1.5 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 mt-2">
               {results.media.map((m) => (
                 <Command.Item
                   key={m.id}
                   onSelect={() => go("/admin/media")}
-                  className="px-2 py-2 font-ui text-sm text-aksum-black cursor-pointer data-[selected=true]:bg-obsidian-grey/5"
+                  className="px-3 py-2.5 font-ui text-sm text-[#1a1c23] rounded-lg cursor-pointer data-[selected=true]:bg-[#faf6e8] transition-colors"
                 >
                   {m.filename}
                 </Command.Item>

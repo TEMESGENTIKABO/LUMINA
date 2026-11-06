@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
-export async function getSiteSettings() {
-  return prisma.siteSettings.upsert({
+export const getSiteSettings = cache(async () =>
+  prisma.siteSettings.upsert({
     where: { id: "singleton" },
     create: { id: "singleton" },
     update: {},
-  });
-}
+  }),
+);

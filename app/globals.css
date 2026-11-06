@@ -2,7 +2,7 @@
 @import "../styles/tokens.css";
 @import "../styles/typography.css";
 @import "../styles/print.css";
-
+@import "../styles/data-saver.css";
 @theme {
   --color-aksum-black: var(--token-aksum-black);
   --color-parchment-white: var(--token-parchment-white);
@@ -13,6 +13,9 @@
   --color-terracotta: var(--token-terracotta);
   --color-hairline: var(--hairline);
   --color-hairline-strong: var(--hairline-strong);
+
+  --color-aksum-navy: #0f1b2e;
+  --color-aksum-crimson: #8b1538;
 
   --font-ui: var(--font-ui);
   --font-body-en: var(--font-body-en);
@@ -47,34 +50,29 @@
   border-top: 1px solid var(--color-hairline);
   border-bottom: 1px solid var(--color-hairline);
 }
-/* globals.css or tailwind.config.ts extensions */
-:root {
-  --aksum-black: #0a0a0a;
-  --aksum-navy: #0f1b2e;      /* Bloomberg-inspired deep blue */
-  --aksum-crimson: #8b1538;   /* FT salmon + i Paper red synthesis */
-  --aksum-gold: #c9a227;
-  --parchment-white: #faf9f6;
-  --obsidian-grey: #5c5c5c;
-  --hairline: rgba(0, 0, 0, 0.08);
-}
 
 /* Shadow elevation for dropdowns */
 .shadow-elevation {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-/* globals.css or similar */
-:root {
-  --color-aksum-black-rgb: 26, 26, 26;
-  --color-aksum-gold-rgb: 201, 168, 76;
-  --color-obsidian-grey-rgb: 107, 107, 107;
-  
-  /* Existing variables */
-  --color-aksum-black: #1a1a1a;
-  --color-aksum-gold: #c9a84c;
-  --color-obsidian-grey: #6b6b6b;
-  --color-lalibela-blue: #2980b9;
-  --color-manuscript-red: #c0392b;
-  --color-parchment-white: #f5f0e8;
-  --font-headline-en: 'YourHeadlineFont', serif;
-  --font-ui: 'YourUiFont', sans-serif;
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Accessibility: consistent, visible focus states everywhere, respecting
+   the platform's own focus-visible heuristics rather than showing rings
+   on every mouse click. */
+:focus-visible {
+  outline: 2px solid var(--color-aksum-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

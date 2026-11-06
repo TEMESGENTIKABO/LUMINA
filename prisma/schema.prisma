@@ -187,6 +187,7 @@ model Article {
   revisions       ArticleRevision[]
   topics          ArticleTopic[]
   editions        EditionArticle[]
+    editorsPick EditorsPick?
   readTimeMinutes Int               @default(5)
 
   createdAt DateTime @default(now())
@@ -211,7 +212,7 @@ model SiteSettings {
   tagline_am            String?
   defaultSeoDescription String?
   contactEmail          String?
-
+  headerTheme           Int     @default(1)   // ← this exists
   twitterUrl   String?
   facebookUrl  String?
   instagramUrl String?
@@ -446,3 +447,22 @@ model ApiKey {
 }
 
 // userId added to PageView below via separate edit
+
+model EditorsPick {
+  id        String  @id @default(cuid())
+  articleId String  @unique
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  position  Int     @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ThemeSchedule {
+  id        String   @id @default(cuid())
+  name      String
+  theme     Int
+  startsAt  DateTime
+  endsAt    DateTime
+  createdAt DateTime @default(now())
+
+  @@index([startsAt, endsAt])
+}

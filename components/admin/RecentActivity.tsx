@@ -78,8 +78,8 @@ function getInitials(name: string | null, email: string | null): string {
 
 export function RecentActivity({ articles }: { articles: ActivityArticle[] }) {
   return (
-    <div className="border border-[#e5e3df] bg-white">
-      <div className="px-5 py-3.5 border-b border-[#e5e3df] bg-[#faf9f7] flex items-center justify-between">
+    <div className="border border-[#e5e3df] bg-white rounded-2xl overflow-hidden shadow-[0_1px_2px_rgba(26,28,35,0.04)]">
+      <div className="px-5 py-4 border-b border-[#f0eeea] bg-white flex items-center justify-between">
         <h2 className="font-headline-en text-sm font-semibold text-[#1a1c23] tracking-tight">
           Recent Activity
         </h2>
@@ -90,7 +90,7 @@ export function RecentActivity({ articles }: { articles: ActivityArticle[] }) {
 
       {articles.length === 0 ? (
         <div className="px-5 py-10 flex flex-col items-center gap-3">
-          <div className="w-10 h-10 bg-[#f5f4f2] border border-[#e5e3df] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#f5f4f2] flex items-center justify-center">
             <FileText size={18} className="text-[#b8b5b0]" />
           </div>
           <div className="text-center">
@@ -108,10 +108,10 @@ export function RecentActivity({ articles }: { articles: ActivityArticle[] }) {
             return (
               <li
                 key={article.id}
-                className="px-5 py-3 flex items-center gap-4 hover:bg-[#faf9f7] transition-colors duration-100 group"
+                className="px-5 py-3.5 flex items-center gap-4 hover:bg-[#faf9f7] transition-colors duration-100 group"
               >
                 {/* Author Initials */}
-                <div className="w-7 h-7 rounded-sm bg-[#1e2028] flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1e2028] to-[#2e313b] flex items-center justify-center flex-shrink-0">
                   <span className="font-ui text-[10px] font-semibold text-[#c9a227]">
                     {getInitials(article.author.name, article.author.email)}
                   </span>
@@ -144,7 +144,7 @@ export function RecentActivity({ articles }: { articles: ActivityArticle[] }) {
                 <div className="flex items-center gap-4 flex-shrink-0">
                   {/* Status Pill */}
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm font-ui text-[10px] font-medium uppercase tracking-wider ${status.bg} ${status.text}`}
+                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-ui text-[10px] font-medium uppercase tracking-wider ${status.bg} ${status.text}`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${status.dot}`}
