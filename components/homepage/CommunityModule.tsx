@@ -1,6 +1,9 @@
 import "./home.css";
+import "./home-upgrade.css";
 import Link from "next/link";
 import { SectionHead } from "./SectionHead";
+import { DiscussionList } from "@/components/community/DiscussionList";
+import { formatDate, getHomeLabels } from "@/lib/homeLabels";
 import type { Article } from "@/content/types/Article";
 
 interface UpcomingEvent {
@@ -19,69 +22,52 @@ export function CommunityModule({
   events: UpcomingEvent[];
   locale: string;
 }) {
+  const L = getHomeLabels(locale);
+
   return (
-    <section className="hp-sec">
+    <section className="hp-sec" aria-labelledby="community-h">
       <div className="hp-w">
-        <SectionHead kicker="Join in" title="Community" />
+        <SectionHead id="community-h" title={L.community} />
         <div className="hp-pair">
           <div className="hp-panel">
-            <p className="hp-sub">Most Discussed</p>
-            {discussed.length === 0 ? (
-              <p
-                className="hp-r"
-                style={{ color: "var(--hp-mut)", fontSize: 14 }}
-              >
-                No discussion yet.
-              </p>
-            ) : (
-              discussed.map(({ article, commentCount }) => (
-                <Link
-                  key={article.slug}
-                  href={`/${locale}/article/${article.slug}`}
-                  className="hp-r"
-                >
-                  <h3 style={{ flex: 1 }}>
-                    {locale === "am" && article.title_am
-                      ? article.title_am
-                      : article.title_en}
-                  </h3>
-                  <span className="hp-cnt">{commentCount}</span>
-                </Link>
-              ))
-            )}
+            <p className="hp-sub" role="heading" aria-level={3}>
+              {L.mostDiscussed}
+            </p>
+            <DiscussionList items={discussed} locale={locale} />
           </div>
 
           <div className="hp-panel">
-            <p className="hp-sub">Upcoming Events</p>
+            <p className="hp-sub" role="heading" aria-level={3}>
+              {L.upcomingEvents}
+            </p>
             {events.length === 0 ? (
-              <p
-                className="hp-r"
-                style={{ color: "var(--hp-mut)", fontSize: 14 }}
-              >
-                No events scheduled yet.
-              </p>
+              <p className="hp-empty">{L.noEvents}</p>
             ) : (
-              events.slice(0, 4).map((event) => {
-                const d = new Date(event.startsAt);
-                return (
-                  <Link
-                    key={event.slug}
-                    href={`/${locale}/events/${event.slug}`}
-                    className="hp-r"
-                  >
-                    <span className="hp-date">
-                      {d.toLocaleDateString("en-US", { month: "short" })}
-                      <b>{d.getDate()}</b>
-                    </span>
-                    <div style={{ minWidth: 0 }}>
-                      <h3>{event.title}</h3>
-                      {event.location && (
-                        <div className="hp-loc">{event.location}</div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })
+              <ul className="hp-list">
+                {events.slice(0, 4).map((event) => (
+                  <li key={event.slug}>
+                    <Link href={`/${locale}/events/${event.slug}`}>
+                      <time
+                        className="hp-date"
+                        dateTime={new Date(event.startsAt).toISOString()}
+                      >
+                        {formatDate(event.startsAt, locale, { month: "short" })}
+                        <b>
+                          {formatDate(event.startsAt, locale, {
+                            day: "numeric",
+                          })}
+                        </b>
+                      </time>
+                      <div className="hp-list-main">
+                        <h3>{event.title}</h3>
+                        {event.location && (
+                          <div className="hp-loc">{event.location}</div>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>

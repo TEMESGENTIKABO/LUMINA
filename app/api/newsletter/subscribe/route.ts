@@ -2,16 +2,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { generalLimiter, getClientIp } from "@/lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Set RESEND_FROM (for example "AKSUM <hello@your-domain>") after verifying
+// your domain in Resend. The fallback below only delivers to the account owner.
+const FROM = process.env.RESEND_FROM ?? "AKSUM <onboarding@resend.dev>";
+
 const subscribeSchema = z.object({
-  email: z.string().email(),
-  topics: z.array(z.string()).default(["morning-brief"]),
+  email: z.string().trim().toLowerCase().email().max(254),
+  topics: z.array(z.string().max(40)).max(10).default(["morning-brief"]),
 });
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const { success } = await generalLimiter.limit(getClientIp(request));
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
   const parsed = subscribeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
@@ -25,7 +41,7 @@ export async function POST(request: NextRequest) {
 
   try {
     await resend.emails.send({
-      from: "AKSUM <onboarding@resend.dev>",
+      from: FROM,
       to: parsed.data.email,
       subject: "Welcome to AKSUM",
       html: `

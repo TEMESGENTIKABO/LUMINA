@@ -25,21 +25,33 @@ export function LiveStrip({
   weather: React.ReactNode;
 }) {
   const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  // Rotate one headline at a time. Re-runs after a manual "next" to reset the timer.
   useEffect(() => {
-    if (items.length < 2) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (items.length < 2 || paused) return;
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
     const id = setInterval(() => setI((v) => (v + 1) % items.length), 6000);
     return () => clearInterval(id);
-  }, [items.length, i]);
+  }, [items.length, i, paused]);
 
   const current = items[i];
 
   return (
     <div className="border-b border-hairline bg-parchment-white">
-      <style>{`@keyframes strip-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.strip-in{animation:strip-in .35s ease-out}`}</style>
-      <div className="max-w-page mx-auto flex h-9 items-center gap-4 px-6 font-ui text-xs">
+      <style>{`
+        @keyframes strip-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .strip-in { animation: strip-in .35s cubic-bezier(0.16,1,0.3,1); }
+        @media (prefers-reduced-motion: reduce) { .strip-in { animation: none; } }
+      `}</style>
+      <div
+        className="max-w-page mx-auto flex h-9 items-center gap-4 px-6 font-ui text-xs"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
         {current ? (
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <span className="flex shrink-0 items-center gap-1.5 rounded-[2px] bg-manuscript-red px-2 py-[3px] text-[10.5px] font-bold uppercase tracking-[0.1em] text-white">

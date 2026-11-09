@@ -11,8 +11,8 @@ export function ActiveSubcategoryBar({ locale }: { locale: string }) {
 
   return (
     <div className="border-b border-hairline bg-parchment-white/80 backdrop-blur-sm">
-      <div className="max-w-page mx-auto px-6">
-        <SubcategoryBar items={subcategories} />
+      <div className="max-w-page mx-auto">
+        <SubcategoryBar items={subcategories} locale={locale} />
       </div>
     </div>
   );

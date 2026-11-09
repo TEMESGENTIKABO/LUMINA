@@ -1,4 +1,5 @@
 import "../homepage/home.css"; // theme colours
+import "../homepage/home-upgrade.css";
 import "./footer.css";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -10,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { getSiteSettings } from "@/content/cms/fetchers/getSiteSettings";
 import { footerColumns } from "@/config/headerNav";
+import { getHomeLabels } from "@/lib/homeLabels";
 import { Emblem } from "./header/Emblem";
 import { BackToTop, FooterLang } from "./FooterTools";
 import { DataSaverToggle } from "./DataSaver";
@@ -17,6 +19,7 @@ import { DataSaverToggle } from "./DataSaver";
 export async function Footer({ locale }: { locale: string }) {
   const t = await getTranslations();
   const settings = await getSiteSettings();
+  const L = getHomeLabels(locale);
   const year = new Date().getFullYear();
   const tagline =
     locale === "am" && settings.tagline_am
@@ -72,7 +75,7 @@ export async function Footer({ locale }: { locale: string }) {
             )}
 
             <Link href={`/${locale}/newsletters`} className="ft-cta">
-              Get the morning brief →
+              {L.morningBrief}
             </Link>
           </div>
 
@@ -95,7 +98,7 @@ export async function Footer({ locale }: { locale: string }) {
             &copy; {year} {settings.siteName}. {t("footer.rights")}
           </p>
           <div className="ft-legal">
-            <Link href={`/${locale}/privacy`}>Privacy</Link>
+            <Link href={`/${locale}/privacy`}>{L.privacy}</Link>
             <DataSaverToggle locale={locale} className="ft-saver" />
             <FooterLang locale={locale} />
             <BackToTop />

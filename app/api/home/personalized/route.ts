@@ -8,7 +8,10 @@ export async function GET() {
   const headers = { "Cache-Control": "private, no-store" };
 
   if (!session?.user?.id) {
-    return NextResponse.json({ forYou: [], history: [] }, { headers });
+    return NextResponse.json(
+      { signedIn: false, forYou: [], history: [] },
+      { headers },
+    );
   }
 
   const [forYou, history] = await Promise.all([
@@ -16,5 +19,5 @@ export async function GET() {
     getReadingHistory(session.user.id),
   ]);
 
-  return NextResponse.json({ forYou, history }, { headers });
+  return NextResponse.json({ signedIn: true, forYou, history }, { headers });
 }

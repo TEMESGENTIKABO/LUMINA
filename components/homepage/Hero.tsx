@@ -1,225 +1,266 @@
 "use client";
 
 import "./hero.css";
-import Link from "next/link";
-import Image from "next/image";
+import "./home-upgrade.css";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Pause,
+  Play,
+  Star,
+} from "lucide-react";
+import { getHomeLabels, pickText, textLang } from "@/lib/homeLabels";
 import type { Article } from "@/content/types/Article";
 
-const MAX_SLIDES = 3;
-const AUTOPLAY_MS = 7000;
-
-const T = {
-  en: {
-    topStory: "Top Story",
-    breaking: "Breaking",
-    read: "Read Full Story",
-    min: "min read",
-    kicker: "Ethiopia",
-    tagline: ["Rooted in Heritage", "Building Tomorrow"],
-    prev: "Previous story",
-    next: "Next story",
-    goTo: "Go to story",
-  },
-  am: {
-    topStory: "ዋና ዜና",
-    breaking: "አስቸኳይ",
-    read: "ሙሉውን ያንብቡ",
-    min: "ደቂቃ ንባብ",
-    kicker: "ኢትዮጵያ",
-    tagline: ["በቅርስ ላይ የጸና", "ነገን የሚገነባ"],
-    prev: "ቀዳሚ ዜና",
-    next: "ቀጣይ ዜና",
-    goTo: "ወደ ዜና",
-  },
-} as const;
-
-/* ---------- inline icons ---------- */
-const StarIcon = () => (
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
-    <path d="m12 2.5 2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8L12 2.5Z" />
-  </svg>
-);
-const ClockIcon = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7v5.2l3.2 1.8" />
-  </svg>
-);
-const ArrowRight = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M4 12h16M14 6l6 6-6 6" />
-  </svg>
-);
-const Chevron = ({ dir }: { dir: "left" | "right" }) => (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d={dir === "left" ? "m15 5-7 7 7 7" : "m9 5 7 7-7 7"} />
-  </svg>
-);
-/* Gold ring + rosette (swap for the real AKSUM category mark if you have it) */
-const Emblem = () => (
-  <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden>
-    <circle cx="16" cy="16" r="14.2" />
-    <circle cx="16" cy="16" r="10.6" opacity=".55" />
-    <path d="M16 7.5c2.2 2.4 2.2 5.2 0 7.6-2.2-2.4-2.2-5.2 0-7.6ZM16 16.9c2.2 2.4 2.2 5.2 0 7.6-2.2-2.4-2.2-5.2 0-7.6ZM7.5 16c2.4-2.2 5.2-2.2 7.6 0-2.4 2.2-5.2 2.2-7.6 0ZM16.9 16c2.4-2.2 5.2-2.2 7.6 0-2.4 2.2-5.2 2.2-7.6 0Z" />
-    <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none" />
-  </svg>
-);
+const SLIDE_MS = 7000;
 
 export function Hero({
   articles,
   locale,
+  max = 4,
 }: {
   articles: Article[];
   locale: string;
+  max?: number;
 }) {
-  const slides = articles.slice(0, MAX_SLIDES);
+  const L = getHomeLabels(locale);
+  const slides = articles.slice(0, max);
   const count = slides.length;
-  const am = locale === "am";
-  const t = am ? T.am : T.en;
 
-  const [i, setI] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const [inView, setInView] = useState(true);
+  const [saver, setSaver] = useState(
+    () => typeof document !== "undefined" && document.documentElement.dataset.saver === "on",
+  );
+  const [armed, setArmed] = useState(false); // load the other slides' images after first paint
+  const root = useRef<HTMLElement>(null);
   const startX = useRef<number | null>(null);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setArmed(true), 3500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // Don't advance slides nobody can see.
+  useEffect(() => {
+    const el = root.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      {
+        threshold: 0.25,
+      },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [count]);
+
   const go = useCallback(
-    (n: number) => setI(((n % count) + count) % count),
+    (n: number) => {
+      if (count > 0) setCurrent(((n % count) + count) % count);
+    },
     [count],
   );
 
-  useEffect(() => {
-    if (count < 2 || paused) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setI((p) => (p + 1) % count), AUTOPLAY_MS);
-    return () => window.clearInterval(id);
-  }, [count, paused, i]);
+  if (count === 0) return null;
 
-  if (!count) return null;
+  const i = Math.min(current, count - 1);
+  const active = slides[i];
+  const paused = userPaused || hovered || focused || !inView;
+  const playing = count > 1 && !saver && !paused;
+  const kicker = (a: Article) => a.subcategory ?? a.category;
 
-  const title = (a: Article) => (am && a.title_am ? a.title_am : a.title_en);
-  const dek = (a: Article) => (am && a.dek_am ? a.dek_am : a.dek_en);
+  // The CSS progress animation is the single clock: when it ends, advance.
+  const progress = (
+    <span
+      className="hh-prog"
+      aria-hidden
+      onAnimationEnd={(e) => {
+        if (e.animationName === "hh-fill") go(i + 1);
+      }}
+    />
+  );
 
   return (
     <section
-      className="hx"
+      ref={root}
+      className={`hh${playing ? "" : " is-paused"}${saver ? " is-static" : ""}`}
+      style={{ "--hh-ms": `${SLIDE_MS}ms` } as React.CSSProperties}
       aria-roledescription="carousel"
-      aria-label={t.topStory}
-      tabIndex={0}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      aria-label={L.topStory}
+      onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
+      onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(false)}
+      onFocus={() => {
+        setFocused(true);
+        setArmed(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+          setFocused(false);
+      }}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") go(i - 1);
         if (e.key === "ArrowRight") go(i + 1);
       }}
-      onPointerDown={(e) => (startX.current = e.clientX)}
+      onPointerDown={(e) => {
+        startX.current = e.clientX;
+      }}
       onPointerUp={(e) => {
         if (startX.current === null) return;
         const dx = e.clientX - startX.current;
         startX.current = null;
         if (Math.abs(dx) > 60) go(dx < 0 ? i + 1 : i - 1);
       }}
+      onPointerCancel={() => {
+        startX.current = null;
+      }}
     >
-      {/* Photo layers */}
-      {slides.map((a, n) => (
+      {slides.map((s, n) => (
         <div
-          key={a.slug}
-          className={`hx-bg${n === i ? " is-active" : ""}`}
+          key={s.slug}
+          className={`hh-slide${n === i ? " on" : ""}`}
           aria-hidden
         >
-          <Image
-            src={a.heroImageUrl}
-            alt=""
-            fill
-            priority={n === 0}
-            quality={85}
-            sizes="100vw"
-            className="hx-img"
-          />
-        </div>
-      ))}
-      <div className="hx-shade" aria-hidden />
-      <div className="hx-glow" aria-hidden />
-
-      {/* Copy */}
-      {slides.map((a, n) => (
-        <div
-          key={a.slug}
-          className={`hx-slide${n === i ? " is-active" : ""}`}
-          role="group"
-          aria-roledescription="slide"
-          aria-label={`${n + 1} / ${count}`}
-          aria-hidden={n !== i}
-        >
-          <div className="hx-copy">
-            <span className="hx-chip">
-              <StarIcon />
-              {a.isBreaking ? t.breaking : t.topStory}
-            </span>
-
-            <h1 className="hx-title">{title(a)}</h1>
-            <p className="hx-dek">{dek(a)}</p>
-
-            <div className="hx-row">
-              <span className="hx-cat">
-                <Emblem />
-                {a.subcategory ?? a.category}
-              </span>
-              <span className="hx-time">
-                <ClockIcon />
-                {a.readTimeMinutes} {t.min}
-              </span>
-              <Link
-                href={`/${locale}/article/${a.slug}`}
-                className="hx-btn"
-                tabIndex={n === i ? 0 : -1}
-              >
-                {t.read}
-                <ArrowRight />
-              </Link>
-            </div>
+          <div className="hh-img">
+            {(n === 0 || n === i || (armed && !saver)) && (
+              <Image
+                src={s.heroImageUrl}
+                alt=""
+                fill
+                priority={n === 0}
+                sizes="100vw"
+                quality={75}
+              />
+            )}
           </div>
         </div>
       ))}
+      <div className="hh-shade" aria-hidden />
 
-      {/* Top-right tagline */}
-      <div className="hx-tag">
-        <span className="hx-tag-k">
-          <i aria-hidden />
-          {t.kicker}
-        </span>
-        <p>
-          {t.tagline[0]}
-          <br />
-          {t.tagline[1]}
-        </p>
+      <div className="hh-w hh-inner">
+        <div
+          className="hh-copy"
+          key={active.slug}
+          aria-live={playing ? "off" : "polite"}
+        >
+          <span className="hh-pill">
+            {active.isBreaking && (
+              <Star size={13} fill="currentColor" aria-hidden />
+            )}
+            {active.isBreaking ? L.breaking : kicker(active)}
+          </span>
+          <h1
+            className="hh-title hp-serif"
+            lang={textLang(active.title_am, locale)}
+          >
+            {pickText(active.title_en, active.title_am, locale)}
+          </h1>
+          <p className="hh-dek" lang={textLang(active.dek_am, locale)}>
+            {pickText(active.dek_en, active.dek_am, locale)}
+          </p>
+          <div className="hh-meta">
+            <Link href={`/${locale}/article/${active.slug}`} className="hh-btn">
+              {L.readFull}
+              <ArrowRight size={17} aria-hidden />
+            </Link>
+            <span className="hh-time">
+              <Clock size={15} aria-hidden />
+              {active.readTimeMinutes} {L.minRead}
+            </span>
+          </div>
+        </div>
+
+        {count > 1 && (
+          <ol className="hh-rail" aria-label={L.topStories}>
+            {slides.map((s, n) => (
+              <li key={s.slug}>
+                <button
+                  type="button"
+                  className="hh-rail-item"
+                  aria-current={n === i}
+                  onClick={() => go(n)}
+                >
+                  <span className="hh-rail-cat">{kicker(s)}</span>
+                  <span
+                    className="hh-rail-title"
+                    lang={textLang(s.title_am, locale)}
+                  >
+                    {pickText(s.title_en, s.title_am, locale)}
+                  </span>
+                  {n === i && progress}
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
-      {/* Controls */}
       {count > 1 && (
-        <div className="hx-ctrl">
-          <button type="button" className="hx-arrow" aria-label={t.prev} onClick={() => go(i - 1)}>
-            <Chevron dir="left" />
-          </button>
-          <div className="hx-dots" role="tablist">
-            {slides.map((a, n) => (
+        <div className="hh-w hh-foot">
+          <div className="hh-bars" role="group" aria-label={L.topStories}>
+            {slides.map((s, n) => (
               <button
-                key={a.slug}
+                key={s.slug}
                 type="button"
-                role="tab"
-                aria-selected={n === i}
-                aria-label={`${t.goTo} ${n + 1}`}
-                className={n === i ? "is-active" : ""}
+                className="hh-bar"
+                aria-label={L.storyOf(n + 1, count)}
+                aria-current={n === i}
                 onClick={() => go(n)}
-              />
+              >
+                {n === i && progress}
+              </button>
             ))}
           </div>
-          <button type="button" className="hx-arrow" aria-label={t.next} onClick={() => go(i + 1)}>
-            <Chevron dir="right" />
-          </button>
+          <span className="hh-count" aria-hidden>
+            {i + 1} / {count}
+          </span>
+          <div className="hh-btns">
+            <button
+              type="button"
+              className="hh-arrow is-step"
+              aria-label={L.prev}
+              onClick={() => go(i - 1)}
+            >
+              <ChevronLeft size={20} aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="hh-arrow"
+              aria-label={userPaused ? L.play : L.pause}
+              aria-pressed={userPaused}
+              onClick={() => setUserPaused((v) => !v)}
+            >
+              {userPaused ? (
+                <Play size={17} aria-hidden />
+              ) : (
+                <Pause size={17} aria-hidden />
+              )}
+            </button>
+            <button
+              type="button"
+              className="hh-arrow is-step"
+              aria-label={L.next}
+              onClick={() => go(i + 1)}
+            >
+              <ChevronRight size={20} aria-hidden />
+            </button>
+          </div>
+          <p className="sr-only" aria-live={playing ? "off" : "polite"}>
+            {L.storyOf(i + 1, count)}
+          </p>
         </div>
       )}
     </section>
   );
 }
+
+// Keeps existing `import { HeroCarousel } ...` call sites working.
+export { Hero as HeroCarousel };

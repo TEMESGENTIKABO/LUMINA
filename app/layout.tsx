@@ -6,9 +6,10 @@ import {
   Fraunces,
 } from "next/font/google";
 import "./globals.css";
+import { getLocale } from "next-intl/server";
 import type { Metadata, Viewport } from "next";
 import { SITE_URL } from "@/lib/seo";
-import { FloatingContact } from "@/components/layout/FloatingContact";
+
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getActiveTheme } from "@/content/cms/fetchers/getActiveTheme";
@@ -58,10 +59,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const theme = await getActiveTheme();
+  // Needed so :lang(am) typography rules apply on Amharic pages.
+  let locale = "en";
+  try {
+    locale = await getLocale();
+  } catch {}
 
   return (
     <html
-      lang="en"
+      lang={locale}
       suppressHydrationWarning
       data-aksum-theme={theme}
       className={`${bodyEn.variable} ${ui.variable} ${bodyAm.variable} ${headlineEn.variable} ${serifAm.variable}`}
@@ -79,7 +85,6 @@ export default async function RootLayout({
       >
         <ToastProvider>
           {children}
-          <FloatingContact />
           <ServiceWorkerRegister />
         </ToastProvider>
       </body>

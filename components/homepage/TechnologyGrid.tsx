@@ -1,6 +1,5 @@
-import "./home.css";
-import { SectionHead } from "./SectionHead";
-import { StoryCard } from "./StoryCard";
+// TechnologyGrid.tsx
+import { StorySection } from "./StorySection";
 import type { Article } from "@/content/types/Article";
 
 export function TechnologyGrid({
@@ -10,23 +9,13 @@ export function TechnologyGrid({
   articles: Article[];
   locale: string;
 }) {
-  if (articles.length === 0) return null;
-
   return (
-    <section className="hp-sec">
-      <div className="hp-w">
-        <SectionHead
-          kicker="Innovation"
-          title="Technology"
-          href="/business-tech/technology"
-          locale={locale}
-        />
-        <div className="hp-grid c3">
-          {articles.map((a) => (
-            <StoryCard key={a.slug} article={a} locale={locale} />
-          ))}
-        </div>
-      </div>
-    </section>
+    <StorySection
+      articles={articles}
+      locale={locale}
+      kicker="Innovation"
+      title="Technology"
+      href="/business-tech/technology"
+    />
   );
 }

@@ -1,124 +1,135 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { ChevronDown } from "lucide-react";
+import {
+  Bookmark,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  User,
+  UserCheck,
+} from "lucide-react";
+import { hdLabels, initialsOf } from "./header/utils";
 
 const subscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
 
 export function AccountMenu({ locale }: { locale: string }) {
   const { data: session, status } = useSession();
+  const L = hdLabels(locale);
   const [open, setOpen] = useState(false);
   const mounted = useSyncExternalStore(
     subscribe,
-    getClientSnapshot,
-    getServerSnapshot,
+    () => true,
+    () => false,
   );
-  const containerRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-  useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      )
-        setOpen(false);
-    }
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+  const close = useCallback((refocus = false) => {
+    setOpen(false);
+    if (refocus) btnRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close(true);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, close]);
+
+  // Reserve the exact space so the bar never jumps while the session loads.
   if (!mounted || status === "loading") {
-    return <span className="inline-block h-8 w-14" aria-hidden="true" />;
+    return <span className="hd-ib hd-sk hd-round" aria-hidden="true" />;
   }
 
   if (!session) {
     return (
       <Link
         href={`/${locale}/sign-in`}
-        className="font-ui text-[12px] font-semibold opacity-85 transition-opacity hover:opacity-100"
+        className="hd-signin"
+        aria-label={L.signIn}
       >
-        Sign in
+        <User size={18} />
+        <span className="hd-signtxt">{L.signIn}</span>
       </Link>
     );
   }
 
-  const initials = (session.user?.name ?? session.user?.email ?? "?")
-    .split(" ")
-    .map((s) => s[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
+  const name = session.user?.name ?? session.user?.email ?? "";
+  const email = session.user?.email ?? "";
+  const initials = initialsOf(session.user?.name, session.user?.email);
   const isStaff = ["ADMIN", "EDITOR", "AUTHOR"].includes(
     (session.user as { role?: string } | undefined)?.role ?? "",
   );
-  const item =
-    "block px-4 py-2 font-ui text-sm text-obsidian-grey hover:bg-obsidian-grey/5 hover:text-aksum-black";
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={rootRef} className="hd-am">
       <button
-        onClick={() => setOpen(!open)}
-        aria-label="Account menu"
+        ref={btnRef}
+        type="button"
+        className="hd-amb"
+        aria-label={L.account}
         aria-expanded={open}
-        className="flex items-center gap-1.5 opacity-85 transition-opacity hover:opacity-100"
+        aria-controls={menuId}
+        onClick={() => setOpen((v) => !v)}
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-aksum-gold text-[11px] font-bold text-[#12100d]">
-          {initials}
-        </span>
-        <ChevronDown
-          size={14}
-          className={`transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        <span className="hd-av">{initials}</span>
+        <ChevronDown size={14} className="hd-amc" />
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-md border border-obsidian-grey/15 bg-parchment-white py-1 shadow-elevation">
-          <p className="truncate border-b border-obsidian-grey/10 px-4 py-2.5 font-ui text-xs text-obsidian-grey">
-            {session.user?.name ?? session.user?.email}
-          </p>
-          <Link
-            href={`/${locale}/account`}
-            onClick={() => setOpen(false)}
-            className={item}
-          >
-            My Account
+      <div
+        id={menuId}
+        className={`hd-menu ${open ? "open" : ""}`}
+        inert={!open}
+      >
+        <div className="hd-menu-head">
+          <span className="hd-av hd-av--lg">{initials}</span>
+          <div>
+            <b>{name}</b>
+            {email && email !== name && <small>{email}</small>}
+          </div>
+        </div>
+        <nav aria-label={L.account} className="hd-menu-list">
+          <Link href={`/${locale}/account`} onClick={() => close()}>
+            <User size={16} /> {L.account}
           </Link>
-          <Link
-            href={`/${locale}/account/saved`}
-            onClick={() => setOpen(false)}
-            className={item}
-          >
-            Saved Articles
+          <Link href={`/${locale}/account/saved`} onClick={() => close()}>
+            <Bookmark size={16} /> {L.saved}
           </Link>
-          <Link
-            href={`/${locale}/account/following`}
-            onClick={() => setOpen(false)}
-            className={item}
-          >
-            Following
+          <Link href={`/${locale}/account/following`} onClick={() => close()}>
+            <UserCheck size={16} /> {L.following}
           </Link>
           {isStaff && (
-            <Link
-              href="/admin"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 font-ui text-sm text-lalibela-blue hover:bg-obsidian-grey/5"
-            >
-              Admin Dashboard
+            <Link href="/admin" onClick={() => close()}>
+              <LayoutDashboard size={16} /> {L.admin}
             </Link>
           )}
-          <button
-            onClick={() => signOut()}
-            className="w-full border-t border-obsidian-grey/10 px-4 py-2 text-left font-ui text-sm text-manuscript-red hover:bg-obsidian-grey/5"
-          >
-            Sign Out
-          </button>
-        </div>
-      )}
+        </nav>
+        <button
+          type="button"
+          className="hd-menu-out"
+          onClick={() => signOut({ callbackUrl: `/${locale}` })}
+        >
+          <LogOut size={16} /> {L.signOut}
+        </button>
+      </div>
     </div>
   );
 }

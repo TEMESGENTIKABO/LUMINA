@@ -1,0 +1,311 @@
+/* =========================================================
+   AKSUM — UPGRADE LAYER
+   Import AFTER home.css / hero.css. Every rule that overrides an older
+   one starts with `html` so it wins on specificity even if Next.js
+   bundles the stylesheets in a different order.
+========================================================= */
+
+/* ---------- 1. Keyboard focus (was missing on most controls) ---------- */
+html .hp :is(a, button, input, select, textarea, summary):focus-visible,
+html .ft :is(a, button):focus-visible {
+  outline: 2px solid var(--hp-label);
+  outline-offset: 3px;
+}
+html .hh :is(a, button):focus-visible,
+html .hp-news :is(a, button, input):focus-visible,
+html .hp-banner :is(a, button):focus-visible,
+html .hp-band :is(a, button, input):focus-visible {
+  outline: 2px solid var(--hp-bandacc);
+  outline-offset: 3px;
+}
+
+/* ---------- 2. Amharic typography ---------- */
+/* Ge'ez glyphs are tall and have no case: loosen line-height, drop tracking. */
+/* Ethiopic is a FALLBACK: Latin text keeps Inter / Fraunces, Ge'ez glyphs
+   (which those fonts lack) fall through to Noto. Set --font-ethiopic from
+   next/font if you load Noto Sans Ethiopic there. */
+html :is(.hp, .hh, .ft) {
+  font-family:
+    var(--font-ui, Inter, system-ui), var(--font-ethiopic, "Noto Sans Ethiopic"),
+    "Abyssinica SIL", Nyala, system-ui, sans-serif;
+}
+html :is(.hp-serif, .hp-inline-t, .hh-rail-title) {
+  font-family:
+    var(--font-fraunces, Georgia), Georgia, "Times New Roman",
+    var(--font-ethiopic, "Noto Sans Ethiopic"), "Abyssinica SIL", Nyala, serif;
+}
+html :is(.hp, .hh, .ft) :is(h1, h2, h3, h4):lang(am),
+html :is(.hp, .hh, .ft) :is(h1, h2, h3, h4)[lang="am"] {
+  line-height: 1.32;
+  letter-spacing: 0;
+}
+html:lang(am) :is(.hp-lab, .hp-chip, .hp-sub, .hp-brk, .hh-pill, .hh-rail-cat),
+html [lang="am"]:is(.hp-lab, .hp-chip, .hp-sub, .hp-brk, .hh-pill, .hh-rail-cat) {
+  letter-spacing: 0;
+  text-transform: none;
+}
+html .hh-title:lang(am) { line-height: 1.25; }
+html .hh-dek:lang(am) { line-height: 1.7; }
+
+/* ---------- 3. Layout: one container width, calmer vertical rhythm ---------- */
+/* The hero used 1480px / 48px while every section used 1280px / 40px, so the
+   hero headline never lined up with the content below it. */
+html .hh-w { max-width: 1280px; }
+@media (min-width: 1024px) {
+  html .hh-w { padding: 0 40px; }
+}
+html .hp-sec { padding: clamp(32px, 4.5vw, 56px) 0 0; }
+html .hp-sh { margin-bottom: clamp(18px, 2.4vw, 28px); }
+html .hp-soft { margin-top: clamp(40px, 5vw, 64px); }
+
+/* ---------- 4. Touch targets (44px guideline) ---------- */
+html .hp-tab { min-height: 44px; }
+html .hp-tchip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding-inline: 16px;
+}
+
+/* ---------- 5. Hero v2 ---------- */
+html .hh { touch-action: pan-y; }
+@media (min-width: 1024px) {
+  html .hh { height: clamp(520px, 38vw, 640px); }
+}
+html .hh-inner {
+  min-height: inherit;
+  gap: 56px;
+  justify-content: space-between;
+}
+html .hh-copy { flex: 1; min-width: 0; }
+.hh-pill svg { flex: none; }
+/* Solid controls instead of blurred glass: quieter, more editorial. */
+html .hh-arrow {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(var(--hh-shade), 0.72);
+}
+
+/* Top-stories rail (desktop) */
+.hh-rail {
+  display: none;
+  flex: none;
+  width: 300px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(var(--hh-shade), 0.84);
+}
+@media (min-width: 1024px) {
+  .hh-rail { display: block; }
+}
+.hh-rail li + li { border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.hh-rail-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 14px 18px 17px;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.hh-rail-item:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.hh-rail-item[aria-current="true"] { background: rgba(255, 255, 255, 0.09); color: #fff; }
+.hh-rail-cat {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hp-bandacc, #f6c453);
+}
+.hh-rail-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--font-fraunces, Georgia), Georgia, serif;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Progress: the animation is the autoplay clock (see Hero.tsx) */
+.hh-prog {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--hp-bandacc, #f6c453);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: hh-fill var(--hh-ms, 7000ms) linear forwards;
+}
+@keyframes hh-fill { to { transform: scaleX(1); } }
+.hh.is-paused .hh-prog { animation-play-state: paused; }
+.hh.is-static .hh-prog { display: none; }
+
+/* Footer row: segmented bars + counter + controls */
+.hh-foot {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 20px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.hh-bars { display: flex; flex: 1 1 0; gap: 6px; max-width: 280px; min-width: 0; }
+.hh-bar {
+  position: relative;
+  flex: 1;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.hh-bar::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.38);
+}
+.hh-bar .hh-prog { top: 50%; bottom: auto; margin-top: -1.5px; border-radius: 2px; }
+.hh.is-static .hh-bar[aria-current="true"]::before { background: var(--hp-bandacc, #f6c453); }
+.hh-count {
+  display: none;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.8);
+}
+.hh-btns { display: flex; flex: none; gap: 10px; margin-left: auto; }
+.hh-arrow.is-step { display: none; }
+@media (min-width: 640px) {
+  .hh-arrow.is-step { display: grid; }
+}
+@media (min-width: 1024px) {
+  .hh-bars { display: none; }
+  .hh-count { display: inline; }
+}
+
+/* ---------- 6. Lists (discussions, events) ---------- */
+.hp-list { margin: 0; padding: 0; list-style: none; }
+.hp-list li + li { border-top: 1px solid var(--hp-line); }
+.hp-list a { display: flex; align-items: center; gap: 16px; padding: 14px 0; }
+.hp-list h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: color 0.15s;
+}
+.hp-list a:hover h3 { color: var(--hp-hover); }
+.hp-list-main { flex: 1; min-width: 0; }
+.hp-empty { margin: 0; padding: 20px 0 16px; font-size: 14px; color: var(--hp-mut); }
+html .hp-cnt { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+
+/* ---------- 7. Newsletter ---------- */
+html .hp-news .hp-news-form { width: 100%; max-width: 440px; }
+html .hp-news .hp-news-form form { max-width: none; }
+.hp-news-err { margin: 8px 0 0 4px; font-size: 13px; color: #ffb4ae; }
+.hp-news-ok { display: flex; align-items: center; gap: 12px; font-size: 15.5px; font-weight: 600; }
+.hp-news-ok svg {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 50%;
+  background: var(--hp-bandacc);
+  color: #1a1405;
+}
+
+/* ---------- 8. Breaking banner ---------- */
+html .hp-banner .hp-bannerbtn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+}
+html .hp-banner .hp-bannerbtn:hover { background: rgba(255, 255, 255, 0.12); opacity: 1; }
+html .hp-banner .hp-single {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 9. Search highlight + grouped results ---------- */
+.hp-mark {
+  padding: 0 2px;
+  border-radius: 2px;
+  background: var(--hp-chip);
+  color: var(--hp-chipfg);
+}
+.hp-sg { list-style: none; }
+.hp-sg > ul { margin: 0; padding: 0; list-style: none; }
+
+/* ---------- 10. Inline "also read" block inside articles ---------- */
+html .hp-inline {
+  margin: 2.25rem auto;
+  padding: 18px 0;
+  border-block: 1px solid var(--hp-line);
+}
+.hp-inline-h { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--hp-label); }
+.hp-inline ul { margin: 0; padding: 0; list-style: none; }
+.hp-inline li + li { border-top: 1px solid var(--hp-line); }
+.hp-inline a { display: flex; align-items: center; gap: 16px; padding: 12px 0; color: inherit; text-decoration: none; }
+.hp-inline-thumb {
+  position: relative;
+  flex: none;
+  width: 96px;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: var(--hp-r, 10px);
+  background: rgba(128, 128, 128, 0.16);
+}
+.hp-inline-thumb img { object-fit: cover; }
+.hp-inline-t {
+  display: block;
+  font-family: var(--font-fraunces, Georgia), Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  transition: color 0.15s;
+}
+.hp-inline a:hover .hp-inline-t { color: var(--hp-hover); }
+.hp-inline-m { display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--hp-mut); }
+
+/* ---------- 11. Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html .hh-slide { transition: none; }
+  html .hh-slide.on .hh-img img,
+  html .hh-copy { animation: none; }
+  html .hh-prog { animation: none; transform: scaleX(1); }
+  html .hp-banner .hp-track { animation: none; }
+  html .hp-banner .hp-tick { overflow-x: auto; }
+  html .hp-card .hp-im img,
+  html .hp-row .hp-im img { transition: none; }
+}

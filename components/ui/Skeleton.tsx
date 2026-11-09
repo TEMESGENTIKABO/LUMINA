@@ -1,22 +1,18 @@
-"use client";
+import { cn } from "@/lib/cn";
 
-import { twMerge } from "tailwind-merge";
-import { clsx, type ClassValue } from "clsx";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-function Skeleton({
+/** Loading placeholder. Decorative, so hidden from screen readers. */
+export function Skeleton({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse rounded-sm bg-[#f0eeea]", className)}
+      aria-hidden
+      className={cn(
+        "animate-pulse motion-reduce:animate-none rounded-sm bg-obsidian-grey/10",
+        className,
+      )}
       {...props}
     />
   );
 }
-
-export { Skeleton };

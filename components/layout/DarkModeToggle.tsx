@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
-export function DarkModeToggle() {
+export function DarkModeToggle({ className = "" }: { className?: string }) {
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -12,19 +12,20 @@ export function DarkModeToggle() {
   const dark = useSyncExternalStore(
     (onChange) => {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => onChange();
-      window.addEventListener("storage", handleChange);
-      window.addEventListener("aksum-theme-change", handleChange);
-      media.addEventListener("change", handleChange);
+      window.addEventListener("storage", onChange);
+      window.addEventListener("aksum-theme-change", onChange);
+      media.addEventListener("change", onChange);
       return () => {
-        window.removeEventListener("storage", handleChange);
-        window.removeEventListener("aksum-theme-change", handleChange);
-        media.removeEventListener("change", handleChange);
+        window.removeEventListener("storage", onChange);
+        window.removeEventListener("aksum-theme-change", onChange);
+        media.removeEventListener("change", onChange);
       };
     },
     () => {
       const stored = localStorage.getItem("aksum-theme");
-      return stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return stored
+        ? stored === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
     },
     () => false,
   );
@@ -40,11 +41,23 @@ export function DarkModeToggle() {
     window.dispatchEvent(new Event("aksum-theme-change"));
   }
 
-  if (!mounted) return <span className="w-4 h-4 inline-block" aria-hidden="true" />;
+  // Same footprint before hydration, so nothing shifts.
+  if (!mounted) return <span className={className} aria-hidden="true" />;
 
   return (
-    <button onClick={toggle} aria-label="Toggle dark mode" className="text-obsidian-grey/70 transition-colors hover:text-aksum-black">
-      {dark ? <Sun size={16} /> : <Moon size={16} />}
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={dark}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className={className}
+    >
+      {/* key re-mounts the icon so the CSS swap animation replays */}
+      {dark ? (
+        <Sun key="s" size={18} className="hd-swap" />
+      ) : (
+        <Moon key="m" size={18} className="hd-swap" />
+      )}
     </button>
   );
 }
